@@ -4,21 +4,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minha Extensão</title>
+    <title>PhishGuard - Proteção Anti-Phishing</title>
     <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
     <div class="container">
-        <h1>Minha Extensão Chrome</h1>
-        <p>Bem-vindo à sua extensão!</p>
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">
+                <span class="shield-icon">🛡️</span>
+                <h1>PhishGuard</h1>
+            </div>
+            <div class="version">v1.0.0</div>
+        </div>
 
-        <div class="api-section">
-            <button id="fetchDataBtn">Buscar Dados da API</button>
-            <div id="result"></div>
+        <!-- Status da URL Atual -->
+        <div class="current-url-section">
+            <div class="section-title">URL Atual</div>
+            <div id="currentURL" class="current-url">Carregando...</div>
+            <button id="analyzeBtn" class="btn btn-primary">
+                <span class="btn-icon">🔍</span>
+                Analisar Site
+            </button>
+        </div>
+
+        <!-- Loading -->
+        <div id="loadingSection" class="loading-section" style="display: none;">
+            <div class="spinner"></div>
+            <p>Analisando segurança do site...</p>
+        </div>
+
+        <!-- Resultado da Análise -->
+        <div id="resultSection" class="result-section" style="display: none;">
+            <!-- Badge de Risco -->
+            <div id="riskBadge" class="risk-badge"></div>
+
+            <!-- Resumo -->
+            <div class="summary">
+                <div class="summary-item">
+                    <span class="summary-label">Status:</span>
+                    <span id="statusText" class="summary-value"></span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Verificações:</span>
+                    <span id="checksText" class="summary-value"></span>
+                </div>
+            </div>
+
+            <!-- Avisos Detectados -->
+            <div id="warningsSection" style="display: none;">
+                <div class="section-title warnings-title">
+                    <span>⚠️</span> Problemas Detectados
+                </div>
+                <div id="warningsList" class="warnings-list"></div>
+            </div>
+
+            <!-- Site Seguro -->
+            <div id="safeSection" style="display: none;">
+                <div class="safe-message">
+                    <div class="safe-icon">✅</div>
+                    <h3>Site Aparentemente Seguro</h3>
+                    <p>Nenhum indicador de phishing foi detectado neste site.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações Rápidas -->
+        <div class="settings-section">
+            <div class="section-title">⚙️ Configurações</div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="autoCheckToggle">
+                    <span>Verificação automática</span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label>
+                    <input type="checkbox" id="notificationsToggle">
+                    <span>Mostrar notificações</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <button id="clearCacheBtn" class="btn btn-secondary btn-small">
+                🗑️ Limpar Cache
+            </button>
+            <div class="footer-text">
+                Protegendo você contra phishing
+            </div>
         </div>
     </div>
 
+    <script src="config.js"></script>
     <script src="popup.js"></script>
 </body>
 

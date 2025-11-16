@@ -1,177 +1,225 @@
-# Extensão Chrome - Guia Completo
+# 🛡️ PhishGuard - Proteção Anti-Phishing para Chrome
 
-## 📁 Estrutura de Arquivos
+Extensão para Chrome focada na proteção contra phishing para usuários leigos. Detecta e alerta sobre links suspeitos em tempo real com análises detalhadas.
+
+## 🎯 Funcionalidades
+
+### Análises Implementadas
+
+A extensão realiza verificações abrangentes em cada URL:
+
+#### ✅ Verificações Locais (Instantâneas)
+
+1. **Encurtadores de URL**
+   - Detecta uso de serviços como bit.ly, tinyurl.com, etc.
+   - Alerta sobre destino oculto do link
+
+2. **Endereço IP no lugar de domínio**
+   - Identifica URLs usando IPs (ex: http://192.168.1.1)
+   - Sites legítimos raramente usam IPs diretamente
+
+3. **Caracteres Homógrafos Suspeitos**
+   - Detecta caracteres Unicode que imitam letras normais
+   - Protege contra ataques IDN homograph (ex: paypaІ.com usando 'І' cirílico)
+
+4. **Ausência de HTTPS**
+   - Alerta sobre conexões HTTP não seguras
+   - Indica risco de interceptação de dados
+
+5. **Domínio com Similaridade**
+   - Compara com domínios legítimos conhecidos
+   - Detecta typosquatting (ex: gooogle.com, amazom.com)
+   - Identifica domínios que contêm nomes de sites famosos
+
+6. **TLDs Suspeitos**
+   - Verifica extensões de domínio frequentemente usadas em fraudes
+   - Ex: .tk, .ml, .ga, .xyz, etc.
+
+7. **Palavras-chave Suspeitas**
+   - Detecta termos comuns em phishing (verify, urgent, update, etc.)
+   - Identifica tentativas de criar senso de urgência
+
+8. **Análises Adicionais**
+   - Domínios muito longos
+   - Excesso de subdomínios
+   - Uso de portas não padrão
+
+#### 🌐 Verificações com APIs Externas (Opcionais)
+
+1. **VirusTotal**
+   - Verifica se o site foi marcado como malicioso
+   - Requer chave de API gratuita
+
+2. **PhishTank**
+   - Consulta banco de dados colaborativo de phishing
+   - Gratuito, sem necessidade de chave
+
+3. **URLScan.io**
+   - Análise de reputação do site
+   - Uso limitado sem chave
+
+## 📦 Instalação
+
+### Carregar Extensão no Chrome
+
+1. Clone ou baixe este repositório
+2. Abra o Chrome e acesse `chrome://extensions/`
+3. Ative o "Modo do desenvolvedor" no canto superior direito
+4. Clique em "Carregar sem compactação"
+5. Selecione a pasta da extensão
+6. A extensão será instalada e ativada automaticamente
+
+### Configurar APIs (Opcional)
+
+Para aproveitar todas as funcionalidades, configure as chaves de API no arquivo `config.js`:
+
+```javascript
+APIS: {
+    // VirusTotal - https://www.virustotal.com/gui/join-us
+    VIRUSTOTAL_KEY: 'sua-chave-aqui',
+    
+    // Google Safe Browsing - https://console.cloud.google.com/
+    GOOGLE_SAFE_BROWSING_KEY: 'sua-chave-aqui'
+}
+```
+
+**APIs Gratuitas Disponíveis:**
+- VirusTotal: 500 requests/dia
+- URLScan.io: uso limitado sem chave
+- PhishTank: gratuito e ilimitado
+- Google Safe Browsing: 10.000 requests/dia
+
+## 🚀 Como Usar
+
+### 1. Proteção Automática
+- Ao navegar, a extensão verifica automaticamente cada site
+- Sites suspeitos são bloqueados com um overlay de aviso
+- Você pode optar por voltar ou continuar mesmo assim
+
+### 2. Análise Manual
+- Clique no ícone da extensão 🛡️
+- Clique em "Analisar Site"
+- Veja o relatório detalhado com todos os problemas encontrados
+
+### 3. Verificação de Links
+- Passe o mouse sobre links na página
+- Links suspeitos mostram um tooltip de aviso vermelho
+- Evite clicar em links marcados como suspeitos
+
+### 4. Indicador Flutuante
+- Ícone 🛡️ no canto inferior direito de cada página
+- Indica que a proteção está ativa
+- Clique para análise rápida
+
+## 🎨 Interface
+
+### Níveis de Risco
+
+A extensão classifica sites em 5 níveis:
+
+| Nível | Cor | Descrição |
+|-------|-----|-----------|
+| 🟢 **Seguro** | Verde | Nenhum problema detectado |
+| 🔵 **Risco Baixo** | Azul | Problemas menores detectados |
+| 🟡 **Risco Médio** | Amarelo | Várias características suspeitas |
+| 🔴 **Risco Alto** | Vermelho | Múltiplos indicadores de phishing |
+| 🔴 **Risco Crítico** | Vermelho Escuro | Perigo confirmado por múltiplas fontes |
+
+### Popup da Extensão
+
+O popup mostra:
+- URL atual sendo analisada
+- Badge de nível de risco
+- Lista detalhada de problemas encontrados
+- Explicação de cada problema para usuários leigos
+- Configurações rápidas
+
+## ⚙️ Configurações
+
+Acesse as configurações no popup da extensão:
+
+- **Verificação automática**: Ativa/desativa análise ao navegar
+- **Mostrar notificações**: Controla alertas do sistema
+- **Limpar cache**: Remove análises antigas armazenadas
+
+## 🔧 Estrutura do Projeto
 
 ```
-extensao-chrome-hello-world/
-├── manifest.json          # Arquivo de configuração principal (OBRIGATÓRIO)
+Extensao-chrome-phishing/
+├── manifest.json           # Configuração da extensão
+├── background.js          # Service worker (análises em segundo plano)
+├── content.js             # Script injetado nas páginas
 ├── popup.html             # Interface do popup
-├── popup.css              # Estilos do popup
 ├── popup.js               # Lógica do popup
-├── background.js          # Service Worker (executa em segundo plano)
-├── content.js             # Script injetado nas páginas web
-├── icons/                 # Pasta para ícones
-│   ├── icon16.png
-│   ├── icon48.png
-│   └── icon128.png
-└── README.md
+├── popup.css              # Estilos do popup
+├── config.js              # Configurações e listas
+├── phishing-detector.js   # Motor de detecção de phishing
+├── api-examples.js        # Exemplos de uso de API
+└── icons/                 # Ícones da extensão
 ```
 
-## 📋 Arquivos Essenciais
+## 🧪 Testando a Extensão
 
-### 1. **manifest.json** (OBRIGATÓRIO)
-- Arquivo de configuração principal
-- Define permissões, scripts, ícones e metadados
-- Versão 3 é a atual (Manifest V3)
+Para testar as detecções, você pode usar:
 
-### 2. **popup.html, popup.js, popup.css** (Opcional)
-- Interface que aparece ao clicar no ícone da extensão
-- Ideal para controles e configurações rápidas
+1. **URLs de teste conhecidas:**
+   - PhishTank: https://phishtank.org
+   - OpenPhish: https://openphish.com
 
-### 3. **background.js** (Opcional, mas recomendado)
-- Service Worker que executa em segundo plano
-- Gerencia eventos, requisições, e lógica persistente
-- Não tem acesso ao DOM da página
+2. **Simular características suspeitas:**
+   - Usar HTTP ao invés de HTTPS
+   - URLs com IPs: `http://192.168.1.1`
+   - Encurtadores: `bit.ly/xyz`
 
-### 4. **content.js** (Opcional)
-- Script injetado nas páginas web
-- Pode manipular o DOM da página
-- Executa no contexto da página visitada
+⚠️ **NUNCA** use dados reais em sites suspeitos durante testes!
 
-### 5. **icons/** (Recomendado)
-- Ícones da extensão em diferentes tamanhos
-- 16x16, 48x48, 128x128 pixels
+## 🔒 Privacidade e Segurança
 
-## 🌐 Como Fazer Requisições a APIs Externas
+- ✅ Todas as verificações locais são feitas no seu navegador
+- ✅ APIs externas são consultadas apenas para URLs que você visita
+- ✅ Nenhum dado pessoal é coletado ou enviado
+- ✅ Cache de análises armazenado localmente por 1 hora
+- ✅ Código-fonte aberto para auditoria
 
-### Método 1: No Popup (popup.js)
+## 📝 Limitações
 
-```javascript
-async function buscarDados() {
-  try {
-    const response = await fetch('https://api.exemplo.com/dados', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer SEU_TOKEN'
-      }
-    });
+- APIs externas têm limites de uso gratuito
+- Verificações locais podem não detectar todos os ataques sofisticados
+- Verificação de idade do domínio requer API WHOIS (não implementada)
+- Certificado SSL validado apenas pelo navegador
 
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error('Erro:', error);
-  }
-}
-```
+## 🤝 Contribuindo
 
-### Método 2: No Background Script (background.js)
+Sugestões de melhorias são bem-vindas! Áreas para expansão:
 
-```javascript
-// Melhor para requisições persistentes
-async function fetchAPI(url) {
-  const response = await fetch(url);
-  return await response.json();
-}
+- [ ] Verificação de certificado SSL
+- [ ] API WHOIS para idade do domínio
+- [ ] Machine Learning para detecção avançada
+- [ ] Lista negra local personalizável
+- [ ] Relatórios de sites suspeitos
+- [ ] Modo offline com lista local
+- [ ] Suporte para outros navegadores (Firefox, Edge)
 
-// Comunicar com popup
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === 'fetchAPI') {
-    fetchAPI(msg.url)
-      .then(data => sendResponse({ success: true, data }))
-      .catch(err => sendResponse({ success: false, error: err.message }));
-    return true; // Resposta assíncrona
-  }
-});
-```
+## 📄 Licença
 
-### Método 3: POST Request
+Este projeto é de código aberto para fins educacionais e de proteção de usuários.
 
-```javascript
-async function enviarDados(url, dados) {
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(dados)
-  });
-  
-  return await response.json();
-}
-```
+## 🆘 Suporte
 
-## 🔑 Permissões Necessárias (manifest.json)
+Se encontrar problemas ou sites que deveriam ser detectados:
 
-```json
-{
-  "permissions": [
-    "storage",      // Para salvar dados localmente
-    "activeTab"     // Para acessar a aba ativa
-  ],
-  "host_permissions": [
-    "https://*/*",  // Requisições HTTPS
-    "http://*/*"    // Requisições HTTP
-  ]
-}
-```
+1. Abra o console do desenvolvedor (F12)
+2. Verifique mensagens de erro
+3. Reporte o problema com detalhes
 
-## 🚀 Como Instalar a Extensão no Chrome
+## ⚠️ Aviso Legal
 
-1. Abra o Chrome e digite: `chrome://extensions/`
-2. Ative o "Modo do desenvolvedor" (canto superior direito)
-3. Clique em "Carregar sem compactação"
-4. Selecione a pasta `extensao-chrome-hello-world`
-5. A extensão será instalada e aparecerá na barra de ferramentas
+Esta extensão é uma ferramenta de auxílio e não substitui boas práticas de segurança:
 
-## 💡 Dicas Importantes
+- Sempre verifique URLs antes de inserir dados sensíveis
+- Use gerenciador de senhas
+- Ative autenticação de dois fatores
+- Mantenha seu navegador atualizado
+- Em caso de dúvida, não prossiga
 
-### Requisições a APIs:
-- **CORS**: APIs externas precisam permitir requisições do Chrome
-- **Autenticação**: Use headers para tokens (Bearer, API Key)
-- **Permissões**: Adicione `host_permissions` no manifest.json
-- **Background**: Melhor para requisições persistentes ou agendadas
-
-### Comunicação entre Scripts:
-```javascript
-// Enviar mensagem (de qualquer script)
-chrome.runtime.sendMessage({ action: 'hello' }, (response) => {
-  console.log(response);
-});
-
-// Receber mensagem (em qualquer script)
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  console.log(msg);
-  sendResponse({ received: true });
-});
-```
-
-### Armazenamento Local:
-```javascript
-// Salvar dados
-chrome.storage.local.set({ chave: 'valor' });
-
-// Recuperar dados
-chrome.storage.local.get(['chave'], (result) => {
-  console.log(result.chave);
-});
-```
-
-## 🔧 Debugging
-
-1. Popup: Clique com botão direito no popup → "Inspecionar"
-2. Background: Em `chrome://extensions/` → "Inspecionar views"
-3. Content Script: F12 na página web (aba Console)
-
-## 📚 Recursos Úteis
-
-- [Documentação Oficial do Chrome Extensions](https://developer.chrome.com/docs/extensions/)
-- [Manifest V3 Migration Guide](https://developer.chrome.com/docs/extensions/mv3/intro/)
-- [Chrome Extension Samples](https://github.com/GoogleChrome/chrome-extensions-samples)
-
-## 🎨 Criando Ícones
-
-Crie ícones simples em:
-- [Favicon.io](https://favicon.io/)
-- [Canva](https://www.canva.com/)
-- Use emojis grandes e converta para PNG
+**A segurança online é responsabilidade de todos! 🛡️**
