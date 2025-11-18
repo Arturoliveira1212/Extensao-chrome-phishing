@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PhishGuard - Teste de Links de Redirecionamento</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            padding: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 32px;
+        }
+
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .info-box {
+            background: #ebf8ff;
+            border-left: 4px solid #3182ce;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+        }
+
+        .info-box h2 {
+            color: #2c5282;
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .info-box p {
+            color: #2d3748;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .info-box ul {
+            color: #2d3748;
+            font-size: 14px;
+            margin-left: 20px;
+            margin-top: 10px;
+        }
+
+        .info-box li {
+            margin-bottom: 5px;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            color: #2d3748;
+            font-size: 24px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .link-group {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .link-group h3 {
+            color: #4a5568;
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .link-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border-left: 4px solid #cbd5e0;
+            transition: all 0.2s;
+        }
+
+        .link-item:hover {
+            border-left-color: #4299e1;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .link-item.suspicious {
+            border-left-color: #f56565;
+            background: #fff5f5;
+        }
+
+        .link-item.safe {
+            border-left-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .link-label {
+            font-size: 13px;
+            color: #718096;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .link-item a {
+            color: #3182ce;
+            text-decoration: none;
+            word-break: break-all;
+            font-size: 14px;
+        }
+
+        .link-item a:hover {
+            text-decoration: underline;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .badge.suspicious {
+            background: #feb2b2;
+            color: #742a2a;
+        }
+
+        .badge.safe {
+            background: #9ae6b4;
+            color: #22543d;
+        }
+
+        .badge.info {
+            background: #bee3f8;
+            color: #2c5282;
+        }
+
+        .explanation {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔀 Teste de Links de Redirecionamento</h1>
+        <p class="subtitle">Esta página contém diversos tipos de links de redirecionamento para testar o PhishGuard</p>
+
+        <div class="info-box">
+            <h2>ℹ️ Como Funciona</h2>
+            <p><strong>O PhishGuard agora detecta e analisa o destino final de links de redirecionamento!</strong></p>
+            <p>Quando você clica em um link de redirecionamento (como Google Ads, rastreadores de email, etc.), a extensão:</p>
+            <ul>
+                <li>Extrai automaticamente o URL de destino final dos parâmetros</li>
+                <li>Analisa o destino real, não apenas o link intermediário</li>
+                <li>Mostra AMBOS os URLs (intermediário e final) no aviso</li>
+                <li>Protege você mesmo quando phishers usam serviços legítimos para redirecionamento</li>
+            </ul>
+        </div>
+
+        <div class="section">
+            <h2>🎯 Links de Redirecionamento do Google Ads</h2>
+            
+            <div class="link-group">
+                <h3>Google Ads com Destino Suspeito <span class="badge suspicious">Suspeito</span></h3>
+                
+                <div class="link-item suspicious">
+                    <div class="link-label">Exemplo 1: Google Ads → Site com IP</div>
+                    <a href="https://www.googleadservices.com/pagead/aclk?sa=L&ai=test&adurl=http://192.168.1.1/login" target="_blank">
+                        www.googleadservices.com/pagead/aclk?...&adurl=http://192.168.1.1/login
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final usa endereço IP (192.168.1.1) - altamente suspeito
+                    </div>
+                </div>
+
+                <div class="link-item suspicious">
+                    <div class="link-label">Exemplo 2: Google Ads → Domínio Similar ao Banco</div>
+                    <a href="https://www.googleadservices.com/pagead/aclk?sa=L&ai=test&adurl=https://bancodobrasil-seguro.com/login" target="_blank">
+                        www.googleadservices.com/pagead/aclk?...&adurl=https://bancodobrasil-seguro.com/login
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final imita "Banco do Brasil" (bancodobrasil-seguro.com)
+                    </div>
+                </div>
+
+                <div class="link-item suspicious">
+                    <div class="link-label">Exemplo 3: Google Ads → Site Sem HTTPS</div>
+                    <a href="https://www.googleadservices.com/pagead/aclk?sa=L&ai=test&adurl=http://ofertas-imperdivel.net/premio" target="_blank">
+                        www.googleadservices.com/pagead/aclk?...&adurl=http://ofertas-imperdivel.net/premio
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final não usa HTTPS e tem palavras suspeitas
+                    </div>
+                </div>
+            </div>
+
+            <div class="link-group">
+                <h3>Google Ads com Destino Seguro <span class="badge safe">Seguro</span></h3>
+                
+                <div class="link-item safe">
+                    <div class="link-label">Exemplo: Google Ads → Site Legítimo</div>
+                    <a href="https://www.googleadservices.com/pagead/aclk?sa=L&ai=test&adurl=https://www.google.com" target="_blank">
+                        www.googleadservices.com/pagead/aclk?...&adurl=https://www.google.com
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final é site legítimo conhecido (Google)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📧 Rastreadores de Email Marketing</h2>
+            
+            <div class="link-group">
+                <h3>Links de Email com Destinos Variados</h3>
+                
+                <div class="link-item suspicious">
+                    <div class="link-label">Mailchimp → Site Suspeito</div>
+                    <a href="https://mailchi.mp/track?url=http://premio-urgente.xyz/claim" target="_blank">
+                        mailchi.mp/track?url=http://premio-urgente.xyz/claim
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final tem TLD suspeito (.xyz) e palavras-chave de phishing
+                    </div>
+                </div>
+
+                <div class="link-item suspicious">
+                    <div class="link-label">SendGrid → Homógrafo</div>
+                    <a href="https://sendgrid.net/wf/click?upn=test&redirect=https://аmazon.com/confirm" target="_blank">
+                        sendgrid.net/wf/click?...&redirect=https://аmazon.com/confirm
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino usa caractere cirílico "а" ao invés de "a" (homógrafo)
+                    </div>
+                </div>
+
+                <div class="link-item safe">
+                    <div class="link-label">Mailchimp → Site Legítimo</div>
+                    <a href="https://mailchi.mp/track?url=https://www.microsoft.com" target="_blank">
+                        mailchi.mp/track?url=https://www.microsoft.com
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final é site legítimo (Microsoft)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔗 Outros Tipos de Redirecionamento</h2>
+            
+            <div class="link-group">
+                <h3>Redirecionadores Genéricos</h3>
+                
+                <div class="link-item suspicious">
+                    <div class="link-label">Redirect com parâmetro "dest"</div>
+                    <a href="https://redirect.example.com?dest=http://fakebank-login.com" target="_blank">
+                        redirect.example.com?dest=http://fakebank-login.com
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino tem palavras suspeitas (fake, bank, login)
+                    </div>
+                </div>
+
+                <div class="link-item suspicious">
+                    <div class="link-label">Redirect com parâmetro "goto"</div>
+                    <a href="https://links.example.com?goto=https://paypal-verify.tk/account" target="_blank">
+                        links.example.com?goto=https://paypal-verify.tk/account
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino imita PayPal e usa TLD suspeito (.tk)
+                    </div>
+                </div>
+
+                <div class="link-item suspicious">
+                    <div class="link-label">Redirect com parâmetro "continue"</div>
+                    <a href="https://auth.example.com?continue=http://netflix-payment.ml" target="_blank">
+                        auth.example.com?continue=http://netflix-payment.ml
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino imita Netflix e usa TLD gratuito suspeito (.ml)
+                    </div>
+                </div>
+
+                <div class="link-item safe">
+                    <div class="link-label">Redirect com parâmetro "return_url"</div>
+                    <a href="https://portal.example.com?return_url=https://github.com" target="_blank">
+                        portal.example.com?return_url=https://github.com
+                    </a>
+                    <div class="explanation">
+                        ✓ Destino final é site legítimo (GitHub)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🧪 Casos Complexos</h2>
+            
+            <div class="link-group">
+                <h3>URLs Codificadas e Múltiplos Redirecionamentos</h3>
+                
+                <div class="link-item suspicious">
+                    <div class="link-label">URL Codificada com Destino Suspeito</div>
+                    <a href="https://example.com?url=https%3A%2F%2Ffacebook-security.tk%2Fverify" target="_blank">
+                        example.com?url=https%3A%2F%2Ffacebook-security.tk%2Fverify
+                    </a>
+                    <div class="explanation">
+                        ✓ URL codificada decodificada automaticamente, destino imita Facebook
+                    </div>
+                </div>
+
+                <div class="link-item suspicious">
+                    <div class="link-label">Protocolo Relativo</div>
+                    <a href="https://redirect.com?target=//suspicious-site.xyz/login" target="_blank">
+                        redirect.com?target=//suspicious-site.xyz/login
+                    </a>
+                    <div class="explanation">
+                        ✓ URL com protocolo relativo (//) detectada e analisada
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box" style="margin-top: 40px;">
+            <h2>🎯 O Que Esperar ao Testar</h2>
+            <p><strong>Para links com destinos suspeitos:</strong></p>
+            <ul>
+                <li>Você verá um aviso destacado mostrando "LINK DE REDIRECIONAMENTO DETECTADO"</li>
+                <li>O link intermediário (Google Ads, Mailchimp, etc.) será exibido</li>
+                <li>O destino final será mostrado em destaque vermelho</li>
+                <li>Os problemas detectados se referirão ao destino final</li>
+            </ul>
+            <p style="margin-top: 10px;"><strong>Para links com destinos seguros:</strong></p>
+            <ul>
+                <li>O redirecionamento será detectado mas não bloqueado</li>
+                <li>Você será redirecionado automaticamente para o destino seguro</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

@@ -19,23 +19,36 @@ class PhishingDetector {
         try {
             const urlObj = new URL(url);
 
-            // Verificações locais (síncronas)
-            this.checkURLShortener(urlObj);
-            this.checkIPAddress(urlObj);
-            this.checkHomographs(urlObj);
-            this.checkHTTPS(urlObj);
-            this.checkSuspiciousTLD(urlObj);
-            this.checkDomainSimilarity(urlObj);
-            this.checkSuspiciousKeywords(urlObj);
-            this.checkDomainLength(urlObj);
-            this.checkSubdomains(urlObj);
-            this.checkPortNumber(urlObj);
+            // Extrair destino final de redirecionamentos conhecidos
+            const finalURL = this.extractFinalDestination(url, urlObj);
+            const finalUrlObj = finalURL !== url ? new URL(finalURL) : urlObj;
+
+            // Se houver redirecionamento, informar ao usuário
+            if (finalURL !== url) {
+                this.addWarning(
+                    'Link de Redirecionamento Detectado',
+                    `Este é um link intermediário que redireciona para: ${finalURL}. Vamos analisar o destino final.`,
+                    0
+                );
+            }
+
+            // Verificações locais (síncronas) - no destino final
+            this.checkURLShortener(finalUrlObj);
+            this.checkIPAddress(finalUrlObj);
+            this.checkHomographs(finalUrlObj);
+            this.checkHTTPS(finalUrlObj);
+            this.checkSuspiciousTLD(finalUrlObj);
+            this.checkDomainSimilarity(finalUrlObj);
+            this.checkSuspiciousKeywords(finalUrlObj);
+            this.checkDomainLength(finalUrlObj);
+            this.checkSubdomains(finalUrlObj);
+            this.checkPortNumber(finalUrlObj);
 
             // Verificações externas (assíncronas) - executadas em paralelo
             await Promise.allSettled([
-                this.checkVirusTotal(url),
-                this.checkPhishTank(url),
-                this.checkURLScan(url)
+                this.checkVirusTotal(finalURL),
+                this.checkPhishTank(finalURL),
+                this.checkURLScan(finalURL)
             ]);
 
             // Calcular nível de risco
@@ -43,6 +56,8 @@ class PhishingDetector {
 
             return {
                 url: url,
+                finalURL: finalURL,
+                isRedirect: finalURL !== url,
                 isPhishing: this.riskScore > 0,
                 riskLevel: this.riskLevel,
                 riskScore: this.riskScore,
@@ -64,7 +79,65 @@ class PhishingDetector {
     }
 
     /**
-     * Verifica se a URL usa encurtador
+     * Extrai o destino final de URLs de redirecionamento conhecidas
+     * @param {string} url - URL completa original
+     * @param {URL} urlObj - Objeto URL parseado
+     * @returns {string} - URL final ou URL original se não for redirecionamento
+     */
+    extractFinalDestination(url, urlObj) {
+        // Lista de parâmetros comuns usados para redirecionamento
+        const redirectParams = [
+            'adurl',        // Google Ads
+            'url',          // Genérico
+            'redirect',     // Genérico
+            'dest',         // Destination
+            'destination',  // Destination
+            'target',       // Target URL
+            'link',         // Link
+            'to',           // To
+            'goto',         // Go to
+            'redir',        // Redirect
+            'redirect_url', // Redirect URL
+            'return_url',   // Return URL
+            'continue',     // Continue
+            'next',         // Next
+            'out',          // Outbound
+            'u',            // Short for URL
+            'q',            // Query (usado por alguns motores de busca)
+        ];
+
+        // Verificar cada parâmetro
+        for (const param of redirectParams) {
+            const value = urlObj.searchParams.get(param);
+            if (value) {
+                try {
+                    // Decodificar URL (pode estar URL encoded)
+                    const decodedValue = decodeURIComponent(value);
+
+                    // Verificar se é uma URL válida
+                    if (decodedValue.startsWith('http://') || decodedValue.startsWith('https://')) {
+                        // Validar que é uma URL bem formada
+                        new URL(decodedValue);
+                        return decodedValue;
+                    } else if (decodedValue.startsWith('//')) {
+                        // URL relativa ao protocolo
+                        const fullUrl = 'https:' + decodedValue;
+                        new URL(fullUrl);
+                        return fullUrl;
+                    }
+                } catch (e) {
+                    // Se não for uma URL válida, continuar procurando
+                    continue;
+                }
+            }
+        }
+
+        // Se não encontrou nenhum parâmetro de redirecionamento, retornar URL original
+        return url;
+    }
+
+    /**
+     * Verifica se usa encurtador de URL
      */
     checkURLShortener(urlObj) {
         const hostname = urlObj.hostname.toLowerCase();

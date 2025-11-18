@@ -4,42 +4,59 @@ Extensão para Chrome focada na proteção contra phishing para usuários leigos
 
 ## 🎯 Funcionalidades
 
+### 🔒 Proteção Inteligente em Tempo Real
+
+**Sistema de Interceptação de Links:**
+- ✅ Todos os cliques em links externos são interceptados automaticamente
+- ✅ Análise completa ANTES de acessar o site
+- ✅ Links seguros: acesso imediato e automático
+- ✅ Links suspeitos: tela de aviso com explicação detalhada
+- ✅ Navegação interna do site: liberada sem verificação
+- ✅ Funciona com links que abrem em nova aba
+
 ### Análises Implementadas
 
 A extensão realiza verificações abrangentes em cada URL:
 
 #### ✅ Verificações Locais (Instantâneas)
 
-1. **Encurtadores de URL**
+1. **Detecção de Redirecionamentos** ⭐ NOVO
+   - Extrai automaticamente o destino final de links de redirecionamento
+   - Suporta Google Ads, rastreadores de email, e outros serviços
+   - Analisa o destino real, não apenas o link intermediário
+   - Mostra ambos os URLs (intermediário e final) no aviso
+   - Protege contra phishers que usam serviços legítimos para redirecionamento
+
+2. **Encurtadores de URL**
    - Detecta uso de serviços como bit.ly, tinyurl.com, etc.
    - Alerta sobre destino oculto do link
 
-2. **Endereço IP no lugar de domínio**
+3. **Endereço IP no lugar de domínio**
    - Identifica URLs usando IPs (ex: http://192.168.1.1)
    - Sites legítimos raramente usam IPs diretamente
 
-3. **Caracteres Homógrafos Suspeitos**
+4. **Caracteres Homógrafos Suspeitos**
    - Detecta caracteres Unicode que imitam letras normais
    - Protege contra ataques IDN homograph (ex: paypaІ.com usando 'І' cirílico)
 
-4. **Ausência de HTTPS**
+5. **Ausência de HTTPS**
    - Alerta sobre conexões HTTP não seguras
    - Indica risco de interceptação de dados
 
-5. **Domínio com Similaridade**
+6. **Domínio com Similaridade**
    - Compara com domínios legítimos conhecidos
    - Detecta typosquatting (ex: gooogle.com, amazom.com)
    - Identifica domínios que contêm nomes de sites famosos
 
-6. **TLDs Suspeitos**
+7. **TLDs Suspeitos**
    - Verifica extensões de domínio frequentemente usadas em fraudes
    - Ex: .tk, .ml, .ga, .xyz, etc.
 
-7. **Palavras-chave Suspeitas**
+8. **Palavras-chave Suspeitas**
    - Detecta termos comuns em phishing (verify, urgent, update, etc.)
    - Identifica tentativas de criar senso de urgência
 
-8. **Análises Adicionais**
+9. **Análises Adicionais**
    - Domínios muito longos
    - Excesso de subdomínios
    - Uso de portas não padrão
@@ -91,25 +108,30 @@ APIS: {
 
 ## 🚀 Como Usar
 
-### 1. Proteção Automática
-- Ao navegar, a extensão verifica automaticamente cada site
-- Sites suspeitos são bloqueados com um overlay de aviso
-- Você pode optar por voltar ou continuar mesmo assim
+### 1. Proteção Automática em Cliques
+- **Ao clicar em qualquer link externo**, a extensão:
+  - ⏸️ **Pausa a navegação** automaticamente
+  - 🔍 **Analisa o link** em tempo real
+  - ✅ **Se for seguro (Risco Baixo/Nenhum)**: redireciona automaticamente
+  - ⚠️ **Se for suspeito (Risco Médio/Alto/Crítico)**: mostra tela de aviso com:
+    - Todos os problemas detectados explicados
+    - Opção de cancelar (recomendado)
+    - Opção de prosseguir por sua conta e risco
 
 ### 2. Análise Manual
 - Clique no ícone da extensão 🛡️
 - Clique em "Analisar Site"
 - Veja o relatório detalhado com todos os problemas encontrados
 
-### 3. Verificação de Links
-- Passe o mouse sobre links na página
-- Links suspeitos mostram um tooltip de aviso vermelho
-- Evite clicar em links marcados como suspeitos
-
-### 4. Indicador Flutuante
+### 3. Indicador de Proteção Ativa
 - Ícone 🛡️ no canto inferior direito de cada página
-- Indica que a proteção está ativa
-- Clique para análise rápida
+- Confirma que a proteção está ativa
+- Indica que todos os links estão sendo monitorados
+
+### 4. Navegação Interna Liberada
+- Links para o mesmo site (navegação interna) **não são bloqueados**
+- Apenas links externos são verificados
+- Não interfere na usabilidade normal do site
 
 ## 🎨 Interface
 
@@ -160,7 +182,45 @@ Extensao-chrome-phishing/
 
 ## 🧪 Testando a Extensão
 
-Para testar as detecções, você pode usar:
+### Páginas de Teste Incluídas
+
+O projeto inclui arquivos HTML para testar diversos cenários:
+
+#### 1. `teste-links.html` - Testes Gerais
+Contém links para testar as verificações básicas:
+- Links suspeitos (IPs, homógrafos, sem HTTPS)
+- Links seguros (domínios conhecidos)
+- Links internos (não verificados)
+
+#### 2. `teste-redirecionamentos.html` - Testes de Redirecionamento ⭐ NOVO
+Página especial para testar a detecção de links de redirecionamento:
+- **Google Ads** com destinos suspeitos e seguros
+- **Rastreadores de email** (Mailchimp, SendGrid)
+- **Redirecionadores genéricos** (diversos parâmetros)
+- **URLs codificadas** e protocolos relativos
+
+**Como usar:**
+1. Abra o arquivo no navegador
+2. Clique nos links de exemplo
+3. Observe como a extensão:
+   - Detecta o redirecionamento
+   - Extrai o destino final
+   - Mostra ambos os URLs no aviso
+   - Analisa o destino real, não apenas o intermediário
+
+### Exemplos de Links de Redirecionamento Detectados
+
+A extensão identifica e extrai destinos finais de:
+- `adurl` (Google Ads)
+- `url`, `redirect`, `dest`, `destination` (genéricos)
+- `target`, `link`, `to`, `goto` (variações comuns)
+- `continue`, `next`, `out` (fluxos de autenticação)
+- `return_url`, `redirect_url` (retornos)
+- URLs codificadas (decodifica automaticamente)
+
+### Sites de Teste Externos
+
+Para testar com URLs reais de phishing (seguro):
 
 1. **URLs de teste conhecidas:**
    - PhishTank: https://phishtank.org
