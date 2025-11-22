@@ -1,285 +1,237 @@
-# 🛡️ PhishGuard - Proteção Anti-Phishing para Chrome
+# 🛡️ Proteção Anti-Phishing Brasil
 
-Extensão para Chrome focada na proteção contra phishing para usuários leigos. Detecta e alerta sobre links suspeitos em tempo real com análises detalhadas.
+![Versão](https://img.shields.io/badge/vers%C3%A3o-1.0.0-blue)
+![Licença](https://img.shields.io/badge/licen%C3%A7a-MIT-green)
+![Chrome](https://img.shields.io/badge/Chrome-Extension-yellow)
 
-## 🎯 Funcionalidades
+Extensão open-source para navegador Chrome desenvolvida para proteger usuários brasileiros contra links maliciosos, phishing e ameaças online.
 
-### 🔒 Proteção Inteligente em Tempo Real
+## 📋 Sobre o Projeto
 
-**Sistema de Interceptação de Links:**
-- ✅ Todos os cliques em links externos são interceptados automaticamente
-- ✅ Análise completa ANTES de acessar o site
-- ✅ Links seguros: acesso imediato e automático
-- ✅ Links suspeitos: tela de aviso com explicação detalhada
-- ✅ Navegação interna do site: liberada sem verificação
-- ✅ Funciona com links que abrem em nova aba
+Este projeto foi desenvolvido como trabalho acadêmico de **Segurança e Auditoria de Sistemas**, com foco em **Proteção contra Phishing para Usuários Leigos no Brasil**.
 
-### Análises Implementadas
+A extensão analisa automaticamente todos os links clicados pelo usuário, identificando possíveis ameaças antes que a navegação ocorra.
 
-A extensão realiza verificações abrangentes em cada URL:
+## ✨ Funcionalidades
 
-#### ✅ Verificações Locais (Instantâneas)
+### 🔍 Análises Realizadas
 
-1. **Detecção de Redirecionamentos** ⭐ NOVO
-   - Extrai automaticamente o destino final de links de redirecionamento
-   - Suporta Google Ads, rastreadores de email, e outros serviços
-   - Analisa o destino real, não apenas o link intermediário
-   - Mostra ambos os URLs (intermediário e final) no aviso
-   - Protege contra phishers que usam serviços legítimos para redirecionamento
+- **Detecção de Encurtadores de URL**: Identifica links encurtados (bit.ly, tinyurl, etc.) e resolve o destino final
+- **Identificação de IPs**: Detecta URLs que usam endereços IP em vez de domínios
+- **Análise de Homógrafos**: Identifica caracteres suspeitos que imitam letras normais (ataques IDN)
+- **Verificação de HTTPS**: Alerta sobre sites sem protocolo seguro
+- **Reputação de Domínio**:
+  - Verificação em blacklists de phishing
+  - Detecção de domínios recém-registrados
+  - Análise de similaridade com sites legítimos
+  - Verificação de certificados SSL
+- **Análise de Padrões Suspeitos**:
+  - Excesso de subdomínios
+  - Uso excessivo de números e hífens
+  - URLs extremamente longas
+  - Palavras suspeitas no domínio
 
-2. **Encurtadores de URL**
-   - Detecta uso de serviços como bit.ly, tinyurl.com, etc.
-   - Alerta sobre destino oculto do link
+### 🎯 Classificação de Risco
 
-3. **Endereço IP no lugar de domínio**
-   - Identifica URLs usando IPs (ex: http://192.168.1.1)
-   - Sites legítimos raramente usam IPs diretamente
+A extensão classifica cada link em três níveis:
 
-4. **Caracteres Homógrafos Suspeitos**
-   - Detecta caracteres Unicode que imitam letras normais
-   - Protege contra ataques IDN homograph (ex: paypaІ.com usando 'І' cirílico)
+- **✅ Seguro**: Link não apresenta riscos identificados
+- **⚠️ Baixo Risco**: Alguns indicadores de risco detectados, requer cautela
+- **🛑 Alto Risco**: Múltiplos indicadores de perigo, bloqueio recomendado
 
-5. **Ausência de HTTPS**
-   - Alerta sobre conexões HTTP não seguras
-   - Indica risco de interceptação de dados
+## 🚀 Instalação
 
-6. **Domínio com Similaridade**
-   - Compara com domínios legítimos conhecidos
-   - Detecta typosquatting (ex: gooogle.com, amazom.com)
-   - Identifica domínios que contêm nomes de sites famosos
+### Requisitos
 
-7. **TLDs Suspeitos**
-   - Verifica extensões de domínio frequentemente usadas em fraudes
-   - Ex: .tk, .ml, .ga, .xyz, etc.
+- Google Chrome ou navegador baseado em Chromium (Edge, Brave, Opera)
+- Versão mínima do Chrome: 88
 
-8. **Palavras-chave Suspeitas**
-   - Detecta termos comuns em phishing (verify, urgent, update, etc.)
-   - Identifica tentativas de criar senso de urgência
+### Passos de Instalação
 
-9. **Análises Adicionais**
-   - Domínios muito longos
-   - Excesso de subdomínios
-   - Uso de portas não padrão
+1. **Clone ou baixe este repositório**:
+   ```bash
+   git clone https://github.com/seu-usuario/anti-phishing-brasil.git
+   ```
 
-#### 🌐 Verificações com APIs Externas (Opcionais)
+2. **Abra o Chrome e acesse**:
+   ```
+   chrome://extensions/
+   ```
 
-1. **VirusTotal**
-   - Verifica se o site foi marcado como malicioso
-   - Requer chave de API gratuita
+3. **Ative o "Modo de desenvolvedor"** (canto superior direito)
 
-2. **PhishTank**
-   - Consulta banco de dados colaborativo de phishing
-   - Gratuito, sem necessidade de chave
+4. **Clique em "Carregar sem compactação"**
 
-3. **URLScan.io**
-   - Análise de reputação do site
-   - Uso limitado sem chave
+5. **Selecione a pasta** `artur-extensao` onde está o projeto
 
-## 📦 Instalação
+6. **Pronto!** A extensão está instalada e ativa 🎉
 
-### Carregar Extensão no Chrome
+## 📖 Como Usar
 
-1. Clone ou baixe este repositório
-2. Abra o Chrome e acesse `chrome://extensions/`
-3. Ative o "Modo do desenvolvedor" no canto superior direito
-4. Clique em "Carregar sem compactação"
-5. Selecione a pasta da extensão
-6. A extensão será instalada e ativada automaticamente
+### Uso Básico
 
-### Configurar APIs (Opcional)
+1. **Navegue normalmente**: A extensão trabalha automaticamente em segundo plano
+2. **Ao clicar em um link**: A extensão analisa o destino antes de navegar
+3. **Aguarde a análise**: Uma caixa de carregamento aparece durante a verificação
+4. **Veja o resultado**:
+   - Links seguros navegam automaticamente
+   - Links suspeitos exibem um aviso com detalhes
+5. **Tome sua decisão**: Você pode voltar (recomendado) ou continuar por sua conta
 
-Para aproveitar todas as funcionalidades, configure as chaves de API no arquivo `config.js`:
+### Interface do Popup
 
-```javascript
-APIS: {
-    // VirusTotal - https://www.virustotal.com/gui/join-us
-    VIRUSTOTAL_KEY: 'sua-chave-aqui',
-    
-    // Google Safe Browsing - https://console.cloud.google.com/
-    GOOGLE_SAFE_BROWSING_KEY: 'sua-chave-aqui'
-}
-```
+Clique no ícone da extensão para ver:
+- 📊 **Estatísticas**: Links analisados e ameaças bloqueadas
+- 🗑️ **Limpar Cache**: Remove dados de verificações anteriores
+- ℹ️ **Sobre**: Informações sobre a extensão
 
-**APIs Gratuitas Disponíveis:**
-- VirusTotal: 500 requests/dia
-- URLScan.io: uso limitado sem chave
-- PhishTank: gratuito e ilimitado
-- Google Safe Browsing: 10.000 requests/dia
+## 🔧 Configuração de APIs (Opcional)
 
-## 🚀 Como Usar
+Para melhorar a detecção, você pode configurar APIs gratuitas:
 
-### 1. Proteção Automática em Cliques
-- **Ao clicar em qualquer link externo**, a extensão:
-  - ⏸️ **Pausa a navegação** automaticamente
-  - 🔍 **Analisa o link** em tempo real
-  - ✅ **Se for seguro (Risco Baixo/Nenhum)**: redireciona automaticamente
-  - ⚠️ **Se for suspeito (Risco Médio/Alto/Crítico)**: mostra tela de aviso com:
-    - Todos os problemas detectados explicados
-    - Opção de cancelar (recomendado)
-    - Opção de prosseguir por sua conta e risco
+### Google Safe Browsing (Recomendado)
 
-### 2. Análise Manual
-- Clique no ícone da extensão 🛡️
-- Clique em "Analisar Site"
-- Veja o relatório detalhado com todos os problemas encontrados
+1. Acesse: https://developers.google.com/safe-browsing/v4/get-started
+2. Obtenha uma chave API gratuita
+3. Edite `background.js` e adicione sua chave
 
-### 3. Indicador de Proteção Ativa
-- Ícone 🛡️ no canto inferior direito de cada página
-- Confirma que a proteção está ativa
-- Indica que todos os links estão sendo monitorados
+### VirusTotal
 
-### 4. Navegação Interna Liberada
-- Links para o mesmo site (navegação interna) **não são bloqueados**
-- Apenas links externos são verificados
-- Não interfere na usabilidade normal do site
+1. Crie conta em: https://www.virustotal.com/gui/join-us
+2. Obtenha sua chave API (4 requisições/minuto no plano gratuito)
+3. Edite `background.js` linha 145 e substitua `SUA_CHAVE_API_AQUI`
 
-## 🎨 Interface
+### WHOIS API
 
-### Níveis de Risco
+1. Acesse: https://www.whoisxmlapi.com/
+2. Cadastre-se no plano gratuito (500 consultas/mês)
+3. A integração já está implementada no código
 
-A extensão classifica sites em 5 níveis:
+> **Nota**: A extensão funciona sem APIs configuradas, mas com capacidades limitadas de verificação de reputação.
 
-| Nível | Cor | Descrição |
-|-------|-----|-----------|
-| 🟢 **Seguro** | Verde | Nenhum problema detectado |
-| 🔵 **Risco Baixo** | Azul | Problemas menores detectados |
-| 🟡 **Risco Médio** | Amarelo | Várias características suspeitas |
-| 🔴 **Risco Alto** | Vermelho | Múltiplos indicadores de phishing |
-| 🔴 **Risco Crítico** | Vermelho Escuro | Perigo confirmado por múltiplas fontes |
-
-### Popup da Extensão
-
-O popup mostra:
-- URL atual sendo analisada
-- Badge de nível de risco
-- Lista detalhada de problemas encontrados
-- Explicação de cada problema para usuários leigos
-- Configurações rápidas
-
-## ⚙️ Configurações
-
-Acesse as configurações no popup da extensão:
-
-- **Verificação automática**: Ativa/desativa análise ao navegar
-- **Mostrar notificações**: Controla alertas do sistema
-- **Limpar cache**: Remove análises antigas armazenadas
-
-## 🔧 Estrutura do Projeto
+## 🏗️ Arquitetura
 
 ```
-Extensao-chrome-phishing/
-├── manifest.json           # Configuração da extensão
-├── background.js          # Service worker (análises em segundo plano)
-├── content.js             # Script injetado nas páginas
-├── popup.html             # Interface do popup
-├── popup.js               # Lógica do popup
-├── popup.css              # Estilos do popup
-├── config.js              # Configurações e listas
-├── phishing-detector.js   # Motor de detecção de phishing
-├── api-examples.js        # Exemplos de uso de API
-└── icons/                 # Ícones da extensão
+artur-extensao/
+├── manifest.json          # Configuração da extensão
+├── content.js            # Script principal - intercepta cliques
+├── background.js         # Service worker - APIs e verificações
+├── analisador.js         # Lógica de análise e classificação
+├── utils.js              # Funções utilitárias
+├── styles.css            # Estilos dos modais
+├── popup.html            # Interface do popup
+├── popup.js              # Lógica do popup
+├── icons/                # Ícones da extensão
+└── README.md             # Este arquivo
 ```
 
-## 🧪 Testando a Extensão
+## 🔐 Segurança e Privacidade
 
-### Páginas de Teste Incluídas
+- ✅ **Open Source**: Código totalmente aberto e auditável
+- ✅ **Sem Coleta de Dados**: Nenhuma informação pessoal é coletada ou enviada
+- ✅ **Processamento Local**: Maioria das análises feitas localmente
+- ✅ **APIs Gratuitas**: Apenas APIs públicas e confiáveis (quando configuradas)
+- ✅ **Sem Rastreamento**: Não há analytics ou telemetria
 
-O projeto inclui arquivos HTML para testar diversos cenários:
+## 🛠️ Desenvolvimento
 
-#### 1. `teste-links.html` - Testes Gerais
-Contém links para testar as verificações básicas:
-- Links suspeitos (IPs, homógrafos, sem HTTPS)
-- Links seguros (domínios conhecidos)
-- Links internos (não verificados)
+### Tecnologias Utilizadas
 
-#### 2. `teste-redirecionamentos.html` - Testes de Redirecionamento ⭐ NOVO
-Página especial para testar a detecção de links de redirecionamento:
-- **Google Ads** com destinos suspeitos e seguros
-- **Rastreadores de email** (Mailchimp, SendGrid)
-- **Redirecionadores genéricos** (diversos parâmetros)
-- **URLs codificadas** e protocolos relativos
+- JavaScript (ES6+)
+- Chrome Extension Manifest V3
+- HTML5 / CSS3
+- APIs REST (opcional)
 
-**Como usar:**
-1. Abra o arquivo no navegador
-2. Clique nos links de exemplo
-3. Observe como a extensão:
-   - Detecta o redirecionamento
-   - Extrai o destino final
-   - Mostra ambos os URLs no aviso
-   - Analisa o destino real, não apenas o intermediário
+### Estrutura do Código
 
-### Exemplos de Links de Redirecionamento Detectados
+Todo o código está **documentado em português** com:
+- Comentários explicativos em cada função
+- Nomes de variáveis e métodos em português
+- Documentação JSDoc
 
-A extensão identifica e extrai destinos finais de:
-- `adurl` (Google Ads)
-- `url`, `redirect`, `dest`, `destination` (genéricos)
-- `target`, `link`, `to`, `goto` (variações comuns)
-- `continue`, `next`, `out` (fluxos de autenticação)
-- `return_url`, `redirect_url` (retornos)
-- URLs codificadas (decodifica automaticamente)
+### Contribuindo
 
-### Sites de Teste Externos
+Contribuições são bem-vindas! Para contribuir:
 
-Para testar com URLs reais de phishing (seguro):
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'Adiciona MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
 
-1. **URLs de teste conhecidas:**
-   - PhishTank: https://phishtank.org
-   - OpenPhish: https://openphish.com
+## 📊 Testes
 
-2. **Simular características suspeitas:**
-   - Usar HTTP ao invés de HTTPS
-   - URLs com IPs: `http://192.168.1.1`
-   - Encurtadores: `bit.ly/xyz`
+### Testar a Extensão
 
-⚠️ **NUNCA** use dados reais em sites suspeitos durante testes!
+Você pode testar com URLs conhecidas:
 
-## 🔒 Privacidade e Segurança
+**Links Seguros**:
+- https://www.google.com
+- https://www.gov.br
 
-- ✅ Todas as verificações locais são feitas no seu navegador
-- ✅ APIs externas são consultadas apenas para URLs que você visita
-- ✅ Nenhum dado pessoal é coletado ou enviado
-- ✅ Cache de análises armazenado localmente por 1 hora
-- ✅ Código-fonte aberto para auditoria
+**Links com Encurtadores** (testa resolução):
+- http://bit.ly/example
 
-## 📝 Limitações
+**Links Suspeitos** (para testar detecção):
+- Links com IPs: http://192.168.1.1
+- Links com homógrafos: Criar domínios de teste
 
-- APIs externas têm limites de uso gratuito
-- Verificações locais podem não detectar todos os ataques sofisticados
-- Verificação de idade do domínio requer API WHOIS (não implementada)
-- Certificado SSL validado apenas pelo navegador
+> ⚠️ **Atenção**: Nunca visite links maliciosos reais para teste! Use apenas ambientes controlados.
 
-## 🤝 Contribuindo
+## 🐛 Problemas Conhecidos
 
-Sugestões de melhorias são bem-vindas! Áreas para expansão:
+- A resolução de redirecionamentos pode falhar em alguns encurtadores com proteção CAPTCHA
+- APIs gratuitas têm limites de requisições
+- Alguns sites podem não ser compatíveis com a interceptação de cliques
 
-- [ ] Verificação de certificado SSL
-- [ ] API WHOIS para idade do domínio
-- [ ] Machine Learning para detecção avançada
-- [ ] Lista negra local personalizável
-- [ ] Relatórios de sites suspeitos
-- [ ] Modo offline com lista local
-- [ ] Suporte para outros navegadores (Firefox, Edge)
+## 📝 Licença
 
-## 📄 Licença
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-Este projeto é de código aberto para fins educacionais e de proteção de usuários.
+## 👥 Autores
 
-## 🆘 Suporte
+- **Artur** - Desenvolvimento inicial - Trabalho de Segurança de Sistemas
 
-Se encontrar problemas ou sites que deveriam ser detectados:
+## 🙏 Agradecimentos
 
-1. Abra o console do desenvolvedor (F12)
-2. Verifique mensagens de erro
-3. Reporte o problema com detalhes
+- PhishTank - Base de dados de phishing
+- VirusTotal - API de verificação de ameaças
+- WHOIS API - Verificação de domínios
+- Google Safe Browsing - Proteção contra sites maliciosos
 
-## ⚠️ Aviso Legal
+## 📞 Suporte
 
-Esta extensão é uma ferramenta de auxílio e não substitui boas práticas de segurança:
+Se encontrar problemas ou tiver sugestões:
 
-- Sempre verifique URLs antes de inserir dados sensíveis
-- Use gerenciador de senhas
-- Ative autenticação de dois fatores
-- Mantenha seu navegador atualizado
-- Em caso de dúvida, não prossiga
+1. Abra uma [Issue no GitHub](https://github.com/seu-usuario/anti-phishing-brasil/issues)
+2. Descreva o problema detalhadamente
+3. Inclua prints se possível
 
-**A segurança online é responsabilidade de todos! 🛡️**
+## 🔄 Versões
+
+### v1.0.0 (Atual)
+- ✅ Lançamento inicial
+- ✅ Detecção de encurtadores
+- ✅ Análise de homógrafos
+- ✅ Verificação de reputação
+- ✅ Interface visual completa
+- ✅ Sistema de classificação de risco
+
+### Próximas Funcionalidades (Planejadas)
+- 🔜 Whitelist personalizada
+- 🔜 Relatórios de segurança
+- 🔜 Integração com mais APIs
+- 🔜 Modo offline melhorado
+- 🔜 Suporte para Firefox
+
+## 📚 Referências
+
+- [Chrome Extension Documentation](https://developer.chrome.com/docs/extensions/)
+- [OWASP Phishing Guide](https://owasp.org/www-community/attacks/Phishing)
+- [Anti-Phishing Working Group](https://apwg.org/)
+
+---
+
+**⚠️ Disclaimer**: Esta extensão é uma ferramenta educacional e de auxílio. Não garante 100% de proteção contra todas as ameaças. Use sempre o bom senso ao navegar na internet.
+
+**🔒 Mantenha-se seguro online!**

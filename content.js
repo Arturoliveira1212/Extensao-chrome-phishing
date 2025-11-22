@@ -1,737 +1,386 @@
-// PhishGuard Content Script
-// Executa no contexto das páginas web e adiciona proteção visual
+/**
+ * Content Script Principal
+ * Intercepta cliques em links e coordena análise de segurança
+ */
 
-console.log('PhishGuard carregado na página:', window.location.href);
+// Elemento do modal de análise atual
+let modalAtual = null;
 
-let warningOverlay = null;
-let pendingNavigation = null;
+// URL sendo analisada atualmente
+let urlEmAnalise = null;
 
-// Inicializar content script
-function initContentScript() {
-    console.log('Iniciando PhishGuard content script...');
+/**
+ * Inicializa os event listeners quando a página carregar
+ */
+function inicializar() {
+    console.log('Extensão Anti-Phishing ativada na página');
 
-    // Interceptar cliques em links
-    interceptLinkClicks();
+    // Intercepta todos os cliques na página
+    document.addEventListener('click', interceptarClique, true);
 
-    // Adicionar indicador flutuante
-    addFloatingIndicator();
-
-    // Observar novos links adicionados dinamicamente
-    observeNewLinks();
+    // Também intercepta eventos de navegação por teclado
+    document.addEventListener('keydown', interceptarTeclado, true);
 }
 
 /**
- * Intercepta cliques em todos os links da página
+ * Intercepta cliques em elementos da página
+ * @param {Event} evento - Evento de clique
  */
-function interceptLinkClicks() {
-    // Usar capturing phase para interceptar antes de qualquer outro handler
-    document.addEventListener('click', handleLinkClick, true);
+async function interceptarClique(evento) {
+    // Busca o elemento <a> mais próximo (caso o clique seja em um elemento filho)
+    const link = evento.target.closest('a');
 
-    // Também interceptar links que abrem em nova aba
-    document.addEventListener('auxclick', handleLinkClick, true);
-}
-
-/**
- * Handler para cliques em links
- */
-async function handleLinkClick(event) {
-    // Encontrar o elemento <a> mais próximo
-    let target = event.target;
-    while (target && target.tagName !== 'A') {
-        target = target.parentElement;
+    if (!link || !link.href) {
+        return; // Não é um link, permite a ação normal
     }
 
-    // Se não for um link, permitir navegação normal
-    if (!target || !target.href) {
+    // Ignora links internos (âncoras)
+    if (link.href.startsWith('#') || link.href.startsWith('javascript:')) {
         return;
     }
 
-    const url = target.href;
-    
-    console.log('🛡️ PhishGuard: Link clicado ->', url);
-
-    // Ignorar links âncora, javascript e extensões do navegador
-    if (url.startsWith('#') ||
-        url.startsWith('javascript:') ||
-        url.startsWith('chrome://') ||
-        url.startsWith('chrome-extension://')) {
-        console.log('🛡️ PhishGuard: Link interno/especial - permitido sem verificação');
-        return;
-    }
-
-    // Ignorar links para o mesmo domínio (navegação interna)
+    // Ignora links do mesmo domínio (navegação interna)
     try {
-        const currentDomain = new URL(window.location.href).hostname;
-        const linkDomain = new URL(url).hostname;
+        const urlDestino = new URL(link.href);
+        const urlAtual = new URL(window.location.href);
 
-        if (currentDomain === linkDomain) {
-            console.log('🛡️ PhishGuard: Navegação interna - permitida sem verificação');
-            return; // Permitir navegação interna
+        if (urlDestino.hostname === urlAtual.hostname) {
+            // Mesmo domínio, permite navegação normal
+            return;
         }
     } catch (e) {
-        // Se houver erro ao parsear URL, bloquear por segurança
-        console.warn('🛡️ PhishGuard: Erro ao parsear URL - bloqueando por segurança');
+        // Se houver erro ao processar URLs, continua com análise por segurança
     }
 
-    console.log('🛡️ PhishGuard: Link externo detectado - iniciando verificação...');
+    // Previne a navegação imediata
+    evento.preventDefault();
+    evento.stopPropagation();
+    evento.stopImmediatePropagation();
 
-    // BLOQUEAR a navegação até verificar
-    event.preventDefault();
-    event.stopPropagation();
-    event.stopImmediatePropagation();
+    // Obtém a URL do link
+    let urlAlvo = link.href;
 
-    // Detectar se deve abrir em nova aba
-    const shouldOpenNewTab = 
-        target.target === '_blank' || 
-        target.target === '_new' ||
-        event.ctrlKey || 
-        event.metaKey || 
-        event.button === 1; // Clique do meio
+    // Resolve redirecionamentos se for um encurtador
+    // if (ehEncurtador(urlAlvo)) {
+    urlAlvo = await resolverRedirecionamento(urlAlvo);
+    // }
 
-    // Salvar informações da navegação
-    pendingNavigation = {
-        url: url,
-        openInNewTab: shouldOpenNewTab,
-        event: event
-    };
-
-    // Mostrar loading
-    showValidatingOverlay(url);
-
-    // Verificar o link
-    await validateAndProceed(url, target);
+    // Inicia análise da URL
+    await analisarEProcessarLink(urlAlvo, link);
 }
 
 /**
- * Valida o link e decide se permite navegação
+ * Intercepta navegação por teclado (Enter em links)
+ * @param {Event} evento - Evento de teclado
  */
-async function validateAndProceed(url, linkElement) {
+async function interceptarTeclado(evento) {
+    if (evento.key === 'Enter') {
+        const elementoAtivo = document.activeElement;
+
+        if (elementoAtivo && elementoAtivo.tagName === 'A' && elementoAtivo.href) {
+            // Ignora links do mesmo domínio
+            try {
+                const urlDestino = new URL(elementoAtivo.href);
+                const urlAtual = new URL(window.location.href);
+
+                if (urlDestino.hostname === urlAtual.hostname) {
+                    // Mesmo domínio, permite navegação normal
+                    return;
+                }
+            } catch (e) {
+                // Se houver erro, continua com análise
+            }
+
+            evento.preventDefault();
+            evento.stopPropagation();
+
+            let urlAlvo = elementoAtivo.href;
+
+            if (ehEncurtador(urlAlvo)) {
+                urlAlvo = await resolverRedirecionamento(urlAlvo);
+            }
+
+            console.log('Interceptado Enter em link:', urlAlvo);
+
+            await analisarEProcessarLink(urlAlvo, elementoAtivo);
+        }
+    }
+}
+
+/**
+ * Analisa um link e processa o resultado
+ * @param {string} url - URL para análise
+ * @param {HTMLElement} elementoLink - Elemento do link clicado
+ */
+async function analisarEProcessarLink(url, elementoLink) {
     try {
-        console.log('🛡️ PhishGuard: Enviando URL para análise...', url);
-        
-        // Enviar para background script fazer análise completa
-        const response = await chrome.runtime.sendMessage({
-            action: 'analyzeURL',
-            url: url
-        });
+        urlEmAnalise = url;
 
-        if (response.success) {
-            const result = response.result;
-            
-            console.log('🛡️ PhishGuard: Análise completa!', {
-                risco: result.riskLevel,
-                avisos: result.warnings.length,
-                redirecionamento: result.isRedirect ? 'SIM' : 'NÃO',
-                urlOriginal: result.url,
-                urlFinal: result.isRedirect ? result.finalURL : 'N/A'
-            });
+        // Mostra modal de carregamento
+        mostrarModalCarregamento(url);
 
-            // Log específico para redirecionamentos
-            if (result.isRedirect) {
-                console.log('🔀 PhishGuard: Redirecionamento detectado!');
-                console.log('   📍 Link intermediário:', result.url);
-                console.log('   🎯 Destino final:', result.finalURL);
-                console.log('   ℹ️  O destino final foi analisado, não o link intermediário');
-            }
+        // Cria instância do analisador
+        const analisador = new AnalisadorURL();
 
-            // Decidir baseado no nível de risco
-            if (result.riskLevel === 'SAFE' || result.riskLevel === 'LOW') {
-                // Link seguro - permitir navegação
-                console.log('✅ PhishGuard: Link seguro - redirecionando automaticamente');
-                hideValidatingOverlay();
-                proceedToLink(url, pendingNavigation.openInNewTab);
-            } else {
-                // Link suspeito - mostrar aviso e pedir confirmação
-                console.warn('⚠️ PhishGuard: Link suspeito detectado - mostrando aviso');
-                hideValidatingOverlay();
-                showLinkWarningDialog(result);
-            }
+        // Realiza análise completa
+        const resultado = await analisador.analisarURL(url);
+
+        // Atualiza estatísticas
+        await atualizarEstatisticas(resultado);
+
+        // Processa resultado baseado na classificação
+        if (resultado.classificacao === NIVEL_RISCO.SEGURO) {
+            // Link seguro, fecha modal e navega diretamente
+            fecharModal();
+            navegarParaURL(url);
         } else {
-            // Erro na análise - permitir mas avisar
-            console.error('❌ PhishGuard: Erro na análise', response.error);
-            hideValidatingOverlay();
-            showErrorAndProceed(url);
+            // Link com risco, fecha modal de carregamento e mostra aviso
+            fecharModal();
+            // Aguarda fechamento completo antes de mostrar modal de aviso
+            setTimeout(() => {
+                mostrarModalAviso(resultado, elementoLink);
+            }, 350);
         }
-    } catch (error) {
-        console.error('❌ PhishGuard: Erro ao validar link:', error);
-        hideValidatingOverlay();
-        showErrorAndProceed(url);
+
+    } catch (erro) {
+        console.error('Erro ao analisar link:', erro);
+        fecharModal();
+
+        // Em caso de erro, permite navegação mas com aviso
+        const confirmar = confirm('Erro ao analisar link. Deseja continuar mesmo assim?');
+        if (confirmar) {
+            navegarParaURL(url);
+        }
     }
 }
 
 /**
- * Procede para o link após validação
+ * Resolve redirecionamentos de URLs encurtadas
+ * @param {string} url - URL encurtada
+ * @returns {Promise<string>} - URL final
  */
-function proceedToLink(url, openInNewTab) {
-    if (openInNewTab) {
-        window.open(url, '_blank');
-    } else {
-        window.location.href = url;
-    }
-    pendingNavigation = null;
+async function resolverRedirecionamento(url) {
+    return new Promise((resolve) => {
+        chrome.runtime.sendMessage(
+            {
+                acao: 'resolver_redirecionamento',
+                url: url
+            },
+            (resposta) => {
+                if (chrome.runtime.lastError || !resposta) {
+                    resolve(url); // Retorna URL original em caso de erro
+                } else {
+                    resolve(resposta.urlFinal);
+                }
+            }
+        );
+    });
 }
 
 /**
- * Mostra overlay de validação
+ * Mostra modal de carregamento durante análise
+ * @param {string} url - URL sendo analisada
  */
-function showValidatingOverlay(url) {
-    // Adicionar notificação no canto superior direito também
-    const notification = document.createElement('div');
-    notification.id = 'phishguard-validating-notification';
-    notification.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 16px 24px;
-            border-radius: 12px;
-            box-shadow: 0 10px 40px rgba(102, 126, 234, 0.5);
-            z-index: 2147483646;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-family: system-ui, -apple-system, sans-serif;
-            animation: slideInRight 0.3s ease;
-        ">
-            <div style="
-                width: 24px;
-                height: 24px;
-                border: 3px solid rgba(255,255,255,0.3);
-                border-top-color: white;
-                border-radius: 50%;
-                animation: spin 1s linear infinite;
-            "></div>
-            <div>
-                <div style="font-weight: 600; font-size: 15px;">🛡️ PhishGuard Ativo</div>
-                <div style="font-size: 13px; opacity: 0.9;">Verificando segurança do link...</div>
-            </div>
-        </div>
-        <style>
-            @keyframes slideInRight {
-                from { transform: translateX(400px); opacity: 0; }
-                to { transform: translateX(0); opacity: 1; }
-            }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-        </style>
-    `;
-    document.body.appendChild(notification);
-    
-    // Overlay principal (mais sutil)
-    const overlay = document.createElement('div');
-    overlay.id = 'phishguard-validating-overlay';
-    overlay.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 2147483647;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: system-ui, -apple-system, sans-serif;
-            animation: fadeIn 0.2s ease;
-        ">
-            <div style="
-                background: white;
-                border-radius: 12px;
-                padding: 32px;
-                text-align: center;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            ">
-                <div style="
-                    width: 48px;
-                    height: 48px;
-                    border: 4px solid #e5e7eb;
-                    border-top-color: #667eea;
-                    border-radius: 50%;
-                    animation: spin 1s linear infinite;
-                    margin: 0 auto 16px;
-                "></div>
-                <h2 style="color: #1f2937; margin: 0 0 8px 0; font-size: 20px;">
-                    🛡️ Verificando Segurança
-                </h2>
-                <p style="color: #6b7280; margin: 0; font-size: 14px; max-width: 300px;">
-                    Analisando o link antes de prosseguir...
-                </p>
-            </div>
-        </div>
-        <style>
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            @keyframes spin {
-                to { transform: rotate(360deg); }
-            }
-        </style>
-    `;
-    
-    document.body.appendChild(overlay);
-}/**
- * Esconde overlay de validação
- */
-function hideValidatingOverlay() {
-    const overlay = document.getElementById('phishguard-validating-overlay');
-    if (overlay) {
-        overlay.remove();
+function mostrarModalCarregamento(url) {
+    // Remove modal anterior se existir
+    fecharModal();
+
+    // Cria elemento do modal
+    const modal = document.createElement('div');
+    modal.id = 'anti-phishing-modal-loading';
+    modal.className = 'anti-phishing-modal';
+
+    // Extrai domínio para exibição
+    let dominioExibicao = url;
+    try {
+        const urlObj = new URL(url);
+        dominioExibicao = urlObj.hostname;
+    } catch (e) {
+        // Usa URL completa se houver erro
     }
-    
-    const notification = document.getElementById('phishguard-validating-notification');
-    if (notification) {
-        notification.remove();
-    }
+
+    modal.innerHTML = `
+    <div class="anti-phishing-modal-conteudo loading">
+      <div class="anti-phishing-spinner"></div>
+      <h3>🔍 Analisando Link</h3>
+      <p>Verificando segurança de:</p>
+      <div class="anti-phishing-url">${dominioExibicao}</div>
+      <p class="anti-phishing-aguarde">Aguarde um momento...</p>
+    </div>
+  `;
+
+    document.body.appendChild(modal);
+    modalAtual = modal;
+
+    // Mostra modal com animação
+    setTimeout(() => modal.classList.add('show'), 10);
 }
 
 /**
- * Mostra diálogo de aviso para link suspeito
+ * Mostra modal de aviso com resultado da análise
+ * @param {Object} resultado - Resultado da análise
+ * @param {HTMLElement} elementoLink - Elemento do link original
  */
-function showLinkWarningDialog(result) {
-    const riskInfo = CONFIG.RISK_LEVELS[result.riskLevel];
+function mostrarModalAviso(resultado, elementoLink) {
+    // Cria elemento do modal (não fecha o anterior pois já foi fechado)
+    const modal = document.createElement('div');
+    modal.id = 'anti-phishing-modal-aviso';
+    modal.className = 'anti-phishing-modal';
 
-    // Preparar informação sobre redirecionamento
-    let redirectHtml = '';
-    if (result.isRedirect && result.finalURL !== result.url) {
-        redirectHtml = `
-            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; margin-bottom: 16px; border: 2px solid #fbbf24;">
-                <p style="margin: 0 0 12px 0; color: #78350f; font-size: 14px; font-weight: 600;">
-                    🔀 LINK DE REDIRECIONAMENTO DETECTADO
-                </p>
-                <div style="margin-bottom: 12px;">
-                    <p style="margin: 0 0 4px 0; color: #78350f; font-size: 12px; font-weight: 600;">
-                        Link Intermediário:
-                    </p>
-                    <code style="
-                        word-break: break-all; 
-                        background: white; 
-                        padding: 6px 10px; 
-                        border-radius: 4px; 
-                        display: block;
-                        color: #92400e;
-                        font-size: 12px;
-                        border: 1px solid #fbbf24;
-                    ">
-                        ${result.url}
-                    </code>
-                </div>
-                <div>
-                    <p style="margin: 0 0 4px 0; color: #78350f; font-size: 12px; font-weight: 600;">
-                        ⚠️ Destino Final (ESTE É O LINK QUE SERÁ ANALISADO):
-                    </p>
-                    <code style="
-                        word-break: break-all; 
-                        background: white; 
-                        padding: 6px 10px; 
-                        border-radius: 4px; 
-                        display: block;
-                        color: #dc2626;
-                        font-size: 12px;
-                        border: 2px solid #dc2626;
-                        font-weight: 600;
-                    ">
-                        ${result.finalURL}
-                    </code>
-                </div>
-            </div>
-        `;
+    // Define ícone baseado no nível de risco
+    const icone = resultado.classificacao === NIVEL_RISCO.ALTO_RISCO ? '🛑' : '⚠️';
+
+    // Gera lista de problemas
+    let listaProblemas = '';
+    if (resultado.problemasDetectados.length > 0) {
+        listaProblemas = '<ul class="anti-phishing-problemas">';
+        resultado.problemasDetectados.forEach(problema => {
+            listaProblemas += `<li>${problema.descricao}</li>`;
+        });
+        listaProblemas += '</ul>';
     }
 
-    const dialog = document.createElement('div');
-    dialog.id = 'phishguard-link-warning';
-    dialog.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 2147483647;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: system-ui, -apple-system, sans-serif;
-            animation: fadeIn 0.2s ease;
-        ">
-            <div style="
-                background: white;
-                border-radius: 12px;
-                padding: 32px;
-                max-width: 600px;
-                max-height: 80vh;
-                overflow-y: auto;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-                animation: slideUp 0.3s ease;
-            ">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
-                    <h1 style="color: ${riskInfo.color}; margin: 0 0 8px 0; font-size: 28px;">
-                        Link Suspeito Detectado!
-                    </h1>
-                    <p style="color: #666; margin: 0; font-size: 16px;">
-                        Nível de Risco: <strong style="color: ${riskInfo.color};">${riskInfo.label}</strong>
-                    </p>
-                </div>
-                
-                ${redirectHtml}
-                
-                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                    <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px; font-weight: 600;">
-                        ${result.isRedirect ? 'DESTINO FINAL ANALISADO:' : 'VOCÊ ESTÁ TENTANDO ACESSAR:'}
-                    </p>
-                    <code style="
-                        word-break: break-all; 
-                        background: white; 
-                        padding: 8px 12px; 
-                        border-radius: 4px; 
-                        display: block;
-                        color: #ef4444;
-                        font-size: 13px;
-                        border: 2px solid #fecaca;
-                    ">
-                        ${result.isRedirect ? result.finalURL : result.url}
-                    </code>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 16px;">
-                        🔍 Por que este link é suspeito?
-                    </h2>
-                    ${result.warnings.slice(0, 5).map(w => `
-                        <div style="
-                            background: #fef2f2;
-                            border-left: 4px solid #ef4444;
-                            padding: 12px 16px;
-                            margin-bottom: 12px;
-                            border-radius: 4px;
-                        ">
-                            <h3 style="margin: 0 0 8px 0; color: #991b1b; font-size: 15px;">
-                                ${w.title}
-                            </h3>
-                            <p style="margin: 0; color: #7f1d1d; font-size: 14px; line-height: 1.5;">
-                                ${w.message}
-                            </p>
-                        </div>
-                    `).join('')}
-                    ${result.warnings.length > 5 ? `
-                        <p style="color: #6b7280; font-size: 13px; text-align: center; margin: 12px 0 0 0;">
-                            ... e mais ${result.warnings.length - 5} problemas detectados
-                        </p>
-                    ` : ''}
-                </div>
-                
-                <div style="
-                    background: #fffbeb;
-                    border: 2px solid #fbbf24;
-                    border-radius: 8px;
-                    padding: 16px;
-                    margin-bottom: 24px;
-                ">
-                    <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.5;">
-                        <strong>⚠️ Recomendação:</strong> Este link apresenta características comuns em tentativas de phishing. 
-                        Evite inserir dados pessoais, senhas ou informações bancárias caso decida prosseguir.
-                    </p>
-                </div>
-                
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="phishguard-cancel-nav" style="
-                        background: #10b981;
-                        color: white;
-                        border: none;
-                        padding: 14px 32px;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        flex: 1;
-                    " onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
-                        ✓ Não Acessar (Seguro)
-                    </button>
-                    <button id="phishguard-proceed-anyway" style="
-                        background: #6b7280;
-                        color: white;
-                        border: none;
-                        padding: 14px 32px;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.2s;
-                        flex: 1;
-                    " onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#6b7280'">
-                        Acessar Mesmo Assim
-                    </button>
-                </div>
-                
-                <p style="
-                    text-align: center;
-                    color: #9ca3af;
-                    font-size: 13px;
-                    margin: 24px 0 0 0;
-                ">
-                    🛡️ Protegido por PhishGuard
-                </p>
-            </div>
-        </div>
-        <style>
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            @keyframes slideUp {
-                from { transform: translateY(20px); opacity: 0; }
-                to { transform: translateY(0); opacity: 1; }
-            }
-        </style>
-    `;
+    // Extrai domínio para exibição
+    let dominioExibicao = resultado.url;
+    try {
+        const urlObj = new URL(resultado.url);
+        dominioExibicao = urlObj.hostname;
+    } catch (e) {
+        // Usa URL completa se houver erro
+    }
 
-    document.body.appendChild(dialog);
+    modal.innerHTML = `
+    <div class="anti-phishing-modal-conteudo aviso" style="border-color: ${resultado.corAlerta}">
+      <div class="anti-phishing-icone" style="color: ${resultado.corAlerta}">${icone}</div>
+      <h3 style="color: ${resultado.corAlerta}">${resultado.mensagem}</h3>
+      
+      <div class="anti-phishing-detalhes">
+        <p><strong>URL:</strong></p>
+        <div class="anti-phishing-url">${dominioExibicao}</div>
+        
+        <p><strong>Nível de Risco:</strong> <span style="color: ${resultado.corAlerta}">${formatarClassificacao(resultado.classificacao)}</span></p>
+        <p><strong>Pontuação de Risco:</strong> ${resultado.pontuacaoRisco}</p>
+        
+        ${listaProblemas ? '<p><strong>Problemas Detectados:</strong></p>' + listaProblemas : ''}
+      </div>
 
-    // Event listeners
-    document.getElementById('phishguard-cancel-nav').addEventListener('click', () => {
-        dialog.remove();
-        pendingNavigation = null;
+      <div class="anti-phishing-acoes">
+        <button id="anti-phishing-btn-voltar" class="anti-phishing-btn btn-seguro">
+          🛡️ Não Visitar (Recomendado)
+        </button>
+        <button id="anti-phishing-btn-continuar" class="anti-phishing-btn btn-risco">
+          ⚡ Continuar Mesmo Assim
+        </button>
+      </div>
+
+      <p class="anti-phishing-rodape">
+        <small>🔒 Protegido por Anti-Phishing Brasil</small>
+      </p>
+    </div>
+  `;
+
+    document.body.appendChild(modal);
+    modalAtual = modal;
+
+    // Event listeners para botões
+    document.getElementById('anti-phishing-btn-voltar').addEventListener('click', () => {
+        fecharModal();
     });
 
-    document.getElementById('phishguard-proceed-anyway').addEventListener('click', () => {
-        dialog.remove();
-        if (pendingNavigation) {
-            proceedToLink(pendingNavigation.url, pendingNavigation.openInNewTab);
+    document.getElementById('anti-phishing-btn-continuar').addEventListener('click', () => {
+        fecharModal();
+        navegarParaURL(resultado.url);
+    });
+
+    // Mostra modal com animação
+    setTimeout(() => modal.classList.add('show'), 10);
+
+    // NÃO permite fechar clicando fora - usuário deve escolher uma opção
+    // Isso garante que o modal permaneça até decisão do usuário
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            // Não faz nada - usuário deve clicar em um dos botões
+            console.log('Use os botões para tomar uma decisão sobre este link');
         }
     });
+
+    // NÃO permite fechar com ESC - usuário deve escolher uma opção
+    // Isso força o usuário a tomar uma decisão consciente
+    const handleEsc = (e) => {
+        if (e.key === 'Escape') {
+            console.log('Use os botões para tomar uma decisão sobre este link');
+            // Não fecha o modal
+        }
+    };
+    document.addEventListener('keydown', handleEsc);
 }
 
 /**
- * Mostra erro e permite continuar
+ * Fecha e remove o modal atual
  */
-function showErrorAndProceed(url) {
-    const proceed = confirm(
-        '⚠️ PhishGuard: Não foi possível analisar este link.\n\n' +
-        'Deseja prosseguir mesmo assim?'
-    );
-
-    if (proceed && pendingNavigation) {
-        proceedToLink(pendingNavigation.url, pendingNavigation.openInNewTab);
-    } else {
-        pendingNavigation = null;
+function fecharModal() {
+    if (modalAtual) {
+        modalAtual.classList.remove('show');
+        setTimeout(() => {
+            if (modalAtual && modalAtual.parentNode) {
+                modalAtual.parentNode.removeChild(modalAtual);
+            }
+            modalAtual = null;
+        }, 300);
     }
 }
 
 /**
- * Observa novos links adicionados dinamicamente
+ * Navega para a URL especificada
+ * @param {string} url - URL de destino
  */
-function observeNewLinks() {
-    const observer = new MutationObserver((mutations) => {
-        // Os event listeners já estão no documento, então novos links
-        // serão automaticamente interceptados
-    });
-
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+function navegarParaURL(url) {
+    window.location.href = url;
 }
 
 /**
- * Adiciona indicador flutuante de status
+ * Formata a classificação para exibição
+ * @param {string} classificacao - Nível de risco
+ * @returns {string} - Texto formatado
  */
-function addFloatingIndicator() {
-    const indicator = document.createElement('div');
-    indicator.id = 'phishguard-indicator';
-    indicator.innerHTML = '🛡️';
-    indicator.title = 'PhishGuard Ativo - Validação automática de links';
-    indicator.style.cssText = `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        width: 50px;
-        height: 50px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 50%;
-        cursor: pointer;
-        z-index: 999998;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        transition: transform 0.2s, box-shadow 0.2s;
-    `;
-
-    indicator.addEventListener('mouseenter', () => {
-        indicator.style.transform = 'scale(1.1)';
-        indicator.style.boxShadow = '0 6px 16px rgba(0,0,0,0.4)';
-    });
-
-    indicator.addEventListener('mouseleave', () => {
-        indicator.style.transform = 'scale(1)';
-        indicator.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-    });
-
-    indicator.addEventListener('click', () => {
-        // Abrir popup da extensão
-        chrome.runtime.sendMessage({ action: 'openPopup' });
-    });
-
-    document.body.appendChild(indicator);
+function formatarClassificacao(classificacao) {
+    const mapa = {
+        'seguro': 'Seguro ✅',
+        'baixo_risco': 'Baixo Risco ⚠️',
+        'alto_risco': 'Alto Risco 🛑'
+    };
+    return mapa[classificacao] || classificacao;
 }
 
 /**
- * Mostra overlay de aviso de phishing
+ * Atualiza estatísticas de uso da extensão
+ * @param {Object} resultado - Resultado da análise
  */
-function showPhishingWarning(result) {
-    // Remove overlay anterior se existir
-    if (warningOverlay) {
-        warningOverlay.remove();
+async function atualizarEstatisticas(resultado) {
+    try {
+        const dados = await chrome.storage.local.get('estatisticas');
+        const estatisticas = dados.estatisticas || {
+            linksAnalisados: 0,
+            ameacasBloqueadas: 0
+        };
+
+        estatisticas.linksAnalisados++;
+
+        if (resultado.classificacao !== NIVEL_RISCO.SEGURO) {
+            estatisticas.ameacasBloqueadas++;
+        }
+
+        await chrome.storage.local.set({ estatisticas: estatisticas });
+    } catch (erro) {
+        console.error('Erro ao atualizar estatísticas:', erro);
     }
-
-    const overlay = document.createElement('div');
-    overlay.id = 'phishguard-warning-overlay';
-
-    const riskInfo = CONFIG.RISK_LEVELS[result.riskLevel];
-
-    overlay.innerHTML = `
-        <div style="
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 2147483647;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: system-ui, -apple-system, sans-serif;
-        ">
-            <div style="
-                background: white;
-                border-radius: 12px;
-                padding: 32px;
-                max-width: 600px;
-                max-height: 80vh;
-                overflow-y: auto;
-                box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-            ">
-                <div style="text-align: center; margin-bottom: 24px;">
-                    <div style="font-size: 64px; margin-bottom: 16px;">⚠️</div>
-                    <h1 style="color: ${riskInfo.color}; margin: 0 0 8px 0; font-size: 28px;">
-                        Alerta de Segurança!
-                    </h1>
-                    <p style="color: #666; margin: 0; font-size: 16px;">
-                        Nível de Risco: <strong style="color: ${riskInfo.color};">${riskInfo.label}</strong>
-                    </p>
-                </div>
-                
-                <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-                    <p style="margin: 0; color: #374151; font-size: 15px;">
-                        <strong>Site:</strong><br>
-                        <code style="word-break: break-all; background: white; padding: 4px 8px; border-radius: 4px; display: inline-block; margin-top: 4px;">
-                            ${result.url}
-                        </code>
-                    </p>
-                </div>
-                
-                <div style="margin-bottom: 24px;">
-                    <h2 style="color: #1f2937; font-size: 18px; margin-bottom: 16px;">
-                        🔍 Problemas Detectados:
-                    </h2>
-                    ${result.warnings.map(w => `
-                        <div style="
-                            background: #fef2f2;
-                            border-left: 4px solid #ef4444;
-                            padding: 12px 16px;
-                            margin-bottom: 12px;
-                            border-radius: 4px;
-                        ">
-                            <h3 style="margin: 0 0 8px 0; color: #991b1b; font-size: 15px;">
-                                ${w.title}
-                            </h3>
-                            <p style="margin: 0; color: #7f1d1d; font-size: 14px; line-height: 1.5;">
-                                ${w.message}
-                            </p>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button id="phishguard-go-back" style="
-                        background: #ef4444;
-                        color: white;
-                        border: none;
-                        padding: 12px 32px;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: background 0.2s;
-                    ">
-                        ← Voltar com Segurança
-                    </button>
-                    <button id="phishguard-continue" style="
-                        background: #6b7280;
-                        color: white;
-                        border: none;
-                        padding: 12px 32px;
-                        border-radius: 8px;
-                        font-size: 16px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: background 0.2s;
-                    ">
-                        Continuar Mesmo Assim →
-                    </button>
-                </div>
-                
-                <p style="
-                    text-align: center;
-                    color: #9ca3af;
-                    font-size: 13px;
-                    margin: 24px 0 0 0;
-                ">
-                    🛡️ Protegido por PhishGuard
-                </p>
-            </div>
-        </div>
-    `;
-
-    document.body.appendChild(overlay);
-    warningOverlay = overlay;
-
-    // Event listeners
-    document.getElementById('phishguard-go-back').addEventListener('click', () => {
-        window.history.back();
-    });
-
-    document.getElementById('phishguard-continue').addEventListener('click', () => {
-        overlay.remove();
-        warningOverlay = null;
-    });
 }
 
-// Listener para mensagens do background
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.log('Mensagem recebida no content script:', message);
-
-    if (message.action === 'showWarning') {
-        showPhishingWarning(message.result);
-    }
-
-    sendResponse({ received: true });
-});
-
-// Aguardar o carregamento completo da página
+// Inicializa o content script
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initContentScript);
+    document.addEventListener('DOMContentLoaded', inicializar);
 } else {
-    initContentScript();
+    inicializar();
 }
+
+console.log('Content Script Anti-Phishing carregado');

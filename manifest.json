@@ -1,27 +1,22 @@
 {
     "manifest_version": 3,
-    "name": "PhishGuard - Proteção Anti-Phishing",
+    "name": "Proteção Anti-Phishing Brasil",
     "version": "1.0.0",
-    "description": "Extensão de proteção contra phishing para usuários. Analisa links e detecta ameaças em tempo real.",
+    "description": "Extensão de segurança para proteger usuários contra links maliciosos e phishing",
+    "icons": {
+        "16": "icons/icon16.svg",
+        "48": "icons/icon48.svg",
+        "128": "icons/icon128.svg"
+    },
     "permissions": [
         "activeTab",
         "storage",
-        "tabs",
         "webNavigation",
-        "notifications"
+        "webRequest"
     ],
     "host_permissions": [
-        "https://*/*",
-        "http://*/*"
+        "<all_urls>"
     ],
-    "action": {
-        "default_popup": "popup.html",
-        "default_icon": {
-            "16": "icons/icon16.png",
-            "48": "icons/icon48.png",
-            "128": "icons/icon128.png"
-        }
-    },
     "background": {
         "service_worker": "background.js"
     },
@@ -31,13 +26,33 @@
                 "<all_urls>"
             ],
             "js": [
+                "utils.js",
+                "analisador.js",
                 "content.js"
+            ],
+            "css": [
+                "styles.css"
+            ],
+            "run_at": "document_end"
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "styles.css",
+                "icons/*"
+            ],
+            "matches": [
+                "<all_urls>"
             ]
         }
     ],
-    "icons": {
-        "16": "icons/icon16.png",
-        "48": "icons/icon48.png",
-        "128": "icons/icon128.png"
+    "action": {
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "icons/icon16.png",
+            "48": "icons/icon48.png",
+            "128": "icons/icon128.png"
+        }
     }
 }

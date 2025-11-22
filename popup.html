@@ -4,101 +4,169 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PhishGuard - Proteção Anti-Phishing</title>
-    <link rel="stylesheet" href="popup.css">
+    <title>Proteção Anti-Phishing Brasil</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            width: 350px;
+            min-height: 400px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .logo {
+            font-size: 50px;
+            margin-bottom: 10px;
+        }
+
+        .stats-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .status-container {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 15px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .status-text {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .actions-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 11px;
+            opacity: 0.8;
+        }
+
+        .version {
+            margin-top: 10px;
+            font-size: 10px;
+            opacity: 0.6;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <div class="logo">
-                <span class="shield-icon">🛡️</span>
-                <h1>PhishGuard</h1>
-            </div>
-            <div class="version">v1.0.0</div>
+    <div class="header">
+        <div class="logo">🛡️</div>
+        <h1>Anti-Phishing Brasil</h1>
+        <p>Proteção contra links maliciosos</p>
+    </div>
+
+    <div class="status-container">
+        <div class="status-indicator">✅</div>
+        <div class="status-text" id="status-text">Extensão Ativa</div>
+    </div>
+
+    <div class="stats-container">
+        <div class="stat-item">
+            <span class="stat-label">
+                🔍 Links Analisados
+            </span>
+            <span class="stat-value" id="links-analisados">0</span>
         </div>
-
-        <!-- Status da URL Atual -->
-        <div class="current-url-section">
-            <div class="section-title">URL Atual</div>
-            <div id="currentURL" class="current-url">Carregando...</div>
-            <button id="analyzeBtn" class="btn btn-primary">
-                <span class="btn-icon">🔍</span>
-                Analisar Site
-            </button>
-        </div>
-
-        <!-- Loading -->
-        <div id="loadingSection" class="loading-section" style="display: none;">
-            <div class="spinner"></div>
-            <p>Analisando segurança do site...</p>
-        </div>
-
-        <!-- Resultado da Análise -->
-        <div id="resultSection" class="result-section" style="display: none;">
-            <!-- Badge de Risco -->
-            <div id="riskBadge" class="risk-badge"></div>
-
-            <!-- Resumo -->
-            <div class="summary">
-                <div class="summary-item">
-                    <span class="summary-label">Status:</span>
-                    <span id="statusText" class="summary-value"></span>
-                </div>
-                <div class="summary-item">
-                    <span class="summary-label">Verificações:</span>
-                    <span id="checksText" class="summary-value"></span>
-                </div>
-            </div>
-
-            <!-- Avisos Detectados -->
-            <div id="warningsSection" style="display: none;">
-                <div class="section-title warnings-title">
-                    <span>⚠️</span> Problemas Detectados
-                </div>
-                <div id="warningsList" class="warnings-list"></div>
-            </div>
-
-            <!-- Site Seguro -->
-            <div id="safeSection" style="display: none;">
-                <div class="safe-message">
-                    <div class="safe-icon">✅</div>
-                    <h3>Site Aparentemente Seguro</h3>
-                    <p>Nenhum indicador de phishing foi detectado neste site.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Configurações Rápidas -->
-        <div class="settings-section">
-            <div class="section-title">⚙️ Configurações</div>
-            <div class="setting-item">
-                <label>
-                    <input type="checkbox" id="autoCheckToggle">
-                    <span>Verificação automática</span>
-                </label>
-            </div>
-            <div class="setting-item">
-                <label>
-                    <input type="checkbox" id="notificationsToggle">
-                    <span>Mostrar notificações</span>
-                </label>
-            </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <button id="clearCacheBtn" class="btn btn-secondary btn-small">
-                🗑️ Limpar Cache
-            </button>
-            <div class="footer-text">
-                Protegendo você contra phishing
-            </div>
+        <div class="stat-item">
+            <span class="stat-label">
+                🛑 Ameaças Bloqueadas
+            </span>
+            <span class="stat-value" id="ameacas-bloqueadas">0</span>
         </div>
     </div>
 
-    <script src="config.js"></script>
+    <div class="actions-container">
+        <button class="btn" id="btn-limpar-cache">
+            🗑️ Limpar Cache
+        </button>
+        <button class="btn" id="btn-sobre">
+            ℹ️ Sobre
+        </button>
+    </div>
+
+    <div class="footer">
+        <p>🔒 Mantendo você seguro online</p>
+        <p class="version">Versão 1.0.0</p>
+    </div>
+
     <script src="popup.js"></script>
 </body>
 
