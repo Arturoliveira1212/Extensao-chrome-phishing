@@ -259,7 +259,6 @@ function mostrarModalAviso(resultado, elementoLink) {
         <div class="anti-phishing-url">${dominioExibicao}</div>
         
         <p><strong>Nível de Risco:</strong> <span style="color: ${resultado.corAlerta}">${formatarClassificacao(resultado.classificacao)}</span></p>
-        <p><strong>Pontuação de Risco:</strong> ${resultado.pontuacaoRisco}</p>
         
         ${listaProblemas ? '<p><strong>Problemas Detectados:</strong></p>' + listaProblemas : ''}
       </div>
@@ -274,7 +273,7 @@ function mostrarModalAviso(resultado, elementoLink) {
       </div>
 
       <p class="anti-phishing-rodape">
-        <small>🔒 Protegido por Anti-Phishing Brasil</small>
+        <small>🔒 Protegido por XPTO</small>
       </p>
     </div>
   `;

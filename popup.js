@@ -74,7 +74,7 @@ async function limparCache() {
  */
 function mostrarSobre() {
     const mensagem = `
-🛡️ Proteção Anti-Phishing Brasil
+🛡️ XPTO
 Versão 1.0.0
 
 Extensão open-source desenvolvida para proteger usuários brasileiros contra links maliciosos e tentativas de phishing.
