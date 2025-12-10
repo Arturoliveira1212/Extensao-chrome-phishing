@@ -206,25 +206,46 @@ async function verificarVirusTotal(dominio) {
         // Cadastre-se em: https://www.virustotal.com/gui/join-us
 
         // Nota: Você deve adicionar sua chave API aqui
-        const VIRUSTOTAL_API_KEY = 'SUA_CHAVE_API_AQUI';
+        const VIRUSTOTAL_API_KEY = '9a8934718f64ab3e9216d5c3658effa439ed4658b862d87fbd753a54d58989b3';
 
         if (VIRUSTOTAL_API_KEY === 'SUA_CHAVE_API_AQUI') {
             // Se não houver chave configurada, retorna resultado neutro
             return { malicioso: false, deteccoes: 0 };
         }
 
-        const resposta = await fetch(
-            `https://www.virustotal.com/api/v3/domains/${dominio}`,
+        // 1. Monta body com x-www-form-urlencoded e submete a URL
+        const body = new URLSearchParams();
+        body.append('url', dominio);
+
+        const respostaSubmissao = await fetch(
+            'https://www.virustotal.com/api/v3/urls',
             {
+                method: 'POST',
                 headers: {
-                    'x-apikey': VIRUSTOTAL_API_KEY
-                }
+                    'x-apikey': VIRUSTOTAL_API_KEY,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: body
             }
         );
 
-        if (resposta.ok) {
-            const dados = await resposta.json();
-            const stats = dados.data.attributes.last_analysis_stats;
+        if (!respostaSubmissao.ok) {
+            return { malicioso: false, deteccoes: 0 };
+        }
+
+        const dadosSubmissao = await respostaSubmissao.json();
+        const linkAnalise = dadosSubmissao.data.links.self;
+
+        // 2. Faz uma requisição GET para obter os resultados da análise
+        const respostaAnalise = await fetch(linkAnalise, {
+            headers: {
+                'x-apikey': VIRUSTOTAL_API_KEY
+            }
+        });
+
+        if (respostaAnalise.ok) {
+            const dadosAnalise = await respostaAnalise.json();
+            const stats = dadosAnalise.data.attributes.stats;
 
             const totalDeteccoes = stats.malicious + stats.suspicious;
 
