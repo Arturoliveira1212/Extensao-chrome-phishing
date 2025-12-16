@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste em Massa - Analisador Anti-Phishing</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #4ec9b0;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .info-box {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box h3 {
+            color: #569cd6;
+            margin-bottom: 10px;
+        }
+
+        .config-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .config-item {
+            background: #252526;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #3e3e42;
+        }
+
+        .config-item label {
+            display: block;
+            color: #ce9178;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .config-item input, .config-item select {
+            width: 100%;
+            padding: 8px;
+            background: #3c3c3c;
+            border: 1px solid #555;
+            color: #d4d4d4;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            background: #252526;
+            color: #d4d4d4;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            resize: vertical;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px 24px;
+            background: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        button.success {
+            background: #16825d;
+        }
+
+        button.success:hover {
+            background: #1a9970;
+        }
+
+        button.danger {
+            background: #d16969;
+        }
+
+        button.danger:hover {
+            background: #e07777;
+        }
+
+        #console {
+            background: #1e1e1e;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .log-line {
+            margin: 2px 0;
+        }
+
+        .log-info { color: #4ec9b0; }
+        .log-success { color: #4caf50; }
+        .log-warning { color: #ff9800; }
+        .log-error { color: #f44336; }
+        .log-header { color: #569cd6; font-weight: bold; }
+        .log-separator { color: #666; }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0e639c, #1177bb);
+            width: 0%;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #858585;
+            font-size: 12px;
+        }
+
+        .stat-card.seguro .stat-value { color: #4caf50; }
+        .stat-card.baixo-risco .stat-value { color: #ff9800; }
+        .stat-card.alto-risco .stat-value { color: #f44336; }
+        .stat-card.total .stat-value { color: #4ec9b0; }
+
+        .example-urls {
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 10px;
+        }
+
+        .example-urls h4 {
+            color: #ce9178;
+            margin-bottom: 10px;
+        }
+
+        .example-urls button {
+            margin: 5px;
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ TESTE EM MASSA - ANALISADOR ANTI-PHISHING</h1>
+
+        <div class="info-box">
+            <h3>📋 Informações</h3>
+            <p>Este sistema permite testar múltiplas URLs simultaneamente, combinando análises estáticas e consultas a APIs externas.</p>
+            <p>Digite uma URL por linha no campo abaixo e clique em "Iniciar Teste".</p>
+        </div>
+
+        <div class="config-section">
+            <div class="config-item">
+                <label>Modo de Operação:</label>
+                <select id="modoSimulado">
+                    <option value="true" selected>Simulado (Rápido)</option>
+                    <option value="false">APIs Reais (Lento)</option>
+                </select>
+            </div>
+            <div class="config-item">
+                <label>Delay entre URLs (ms):</label>
+                <input type="number" id="delay" value="500" min="0" max="5000" step="100">
+            </div>
+            <div class="config-item">
+                <label>Logs Detalhados:</label>
+                <select id="verbose">
+                    <option value="true" selected>Sim</option>
+                    <option value="false">Não</option>
+                </select>
+            </div>
+        </div>
+
+        <div>
+            <label style="display: block; color: #ce9178; margin-bottom: 10px; font-weight: bold;">
+                URLs para Análise (uma por linha):
+            </label>
+            <textarea id="urlInput" placeholder="https://exemplo1.com&#10;https://exemplo2.com&#10;https://exemplo3.com"></textarea>
+        </div>
+
+        <div class="example-urls">
+            <h4>📦 Conjuntos de Teste Rápido:</h4>
+            <button onclick="carregarURLsSeguras()">✅ URLs Seguras (3)</button>
+            <button onclick="carregarURLsRiscoBaixo()">⚠️ Baixo Risco (5)</button>
+            <button onclick="carregarURLsAltoRisco()">🚨 Alto Risco (5)</button>
+            <button onclick="carregarURLsCompleto()">📊 Teste Completo (33)</button>
+            <button onclick="limparURLs()">🗑️ Limpar</button>
+        </div>
+
+        <div class="button-group">
+            <button class="success" onclick="iniciarTeste()" id="btnIniciar">▶️ Iniciar Teste</button>
+            <button onclick="pararTeste()" id="btnParar" disabled>⏸️ Parar</button>
+            <button class="danger" onclick="limparConsole()">🗑️ Limpar Console</button>
+            <button onclick="exportarResultados()">💾 Exportar Resultados</button>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress">0%</div>
+        </div>
+
+        <div class="stats-grid" id="stats">
+            <div class="stat-card total">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Total Analisadas</div>
+            </div>
+            <div class="stat-card seguro">
+                <div class="stat-value" id="statSeguras">0</div>
+                <div class="stat-label">Seguras</div>
+            </div>
+            <div class="stat-card baixo-risco">
+                <div class="stat-value" id="statBaixoRisco">0</div>
+                <div class="stat-label">Baixo Risco</div>
+            </div>
+            <div class="stat-card alto-risco">
+                <div class="stat-value" id="statAltoRisco">0</div>
+                <div class="stat-label">Alto Risco</div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>📺 Console de Saída</h3>
+            <div id="console"></div>
+        </div>
+    </div>
+
+    <script src="teste-completo.js"></script>
+    <script>
+        let testeEmAndamento = false;
+        let resultadosGlobais = null;
+
+        // Redireciona console.log para o console visual
+        const consoleDiv = document.getElementById('console');
+        const originalLog = console.log;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            
+            const texto = args.join(' ');
+            const linha = document.createElement('div');
+            linha.className = 'log-line';
+            
+            // Colorização baseada no conteúdo
+            if (texto.includes('✅') || texto.includes('Segura')) {
+                linha.className += ' log-success';
+            } else if (texto.includes('⚠️') || texto.includes('Baixo Risco')) {
+                linha.className += ' log-warning';
+            } else if (texto.includes('🚨') || texto.includes('Alto Risco')) {
+                linha.className += ' log-error';
+            } else if (texto.includes('===') || texto.includes('---')) {
+                linha.className += ' log-separator';
+            } else if (texto.includes('📊') || texto.includes('🛡️')) {
+                linha.className += ' log-header';
+            } else {
+                linha.className += ' log-info';
+            }
+            
+            linha.textContent = texto;
+            consoleDiv.appendChild(linha);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        };
+
+        async function iniciarTeste() {
+            const urlsTexto = document.getElementById('urlInput').value.trim();
+            if (!urlsTexto) {
+                alert('Por favor, digite pelo menos uma URL!');
+                return;
+            }
+
+            const urls = urlsTexto.split('\n')
+                .map(url => url.trim())
+                .filter(url => url && url.startsWith('http'));
+
+            if (urls.length === 0) {
+                alert('Nenhuma URL válida encontrada! URLs devem começar com http:// ou https://');
+                return;
+            }
+
+            testeEmAndamento = true;
+            document.getElementById('btnIniciar').disabled = true;
+            document.getElementById('btnParar').disabled = false;
+
+            const opcoes = {
+                verbose: document.getElementById('verbose').value === 'true',
+                delay: parseInt(document.getElementById('delay').value),
+                modoSimulado: document.getElementById('modoSimulado').value === 'true'
+            };
+
+            // Reset estatísticas
+            resetarEstatisticas();
+
+            // Intercept para atualizar progresso
+            const totalUrls = urls.length;
+            let processadas = 0;
+
+            const originalAnalisar = AnalisadorURL.prototype.analisarURL;
+            AnalisadorURL.prototype.analisarURL = async function(url) {
+                const resultado = await originalAnalisar.call(this, url);
+                processadas++;
+                atualizarProgresso(processadas, totalUrls);
+                atualizarEstatistica(resultado.classificacao);
+                return resultado;
+            };
+
+            try {
+                resultadosGlobais = await testarURLs(urls, opcoes);
+            } catch (erro) {
+                console.error('Erro durante teste:', erro);
+            } finally {
+                AnalisadorURL.prototype.analisarURL = originalAnalisar;
+                testeEmAndamento = false;
+                document.getElementById('btnIniciar').disabled = false;
+                document.getElementById('btnParar').disabled = true;
+            }
+        }
+
+        function pararTeste() {
+            testeEmAndamento = false;
+            console.log('\n⏸️  Teste interrompido pelo usuário\n');
+            document.getElementById('btnIniciar').disabled = false;
+            document.getElementById('btnParar').disabled = true;
+        }
+
+        function atualizarProgresso(atual, total) {
+            const percentual = Math.round((atual / total) * 100);
+            const progressBar = document.getElementById('progress');
+            progressBar.style.width = percentual + '%';
+            progressBar.textContent = `${atual}/${total} (${percentual}%)`;
+        }
+
+        function resetarEstatisticas() {
+            document.getElementById('statTotal').textContent = '0';
+            document.getElementById('statSeguras').textContent = '0';
+            document.getElementById('statBaixoRisco').textContent = '0';
+            document.getElementById('statAltoRisco').textContent = '0';
+            document.getElementById('progress').style.width = '0%';
+            document.getElementById('progress').textContent = '0%';
+        }
+
+        function atualizarEstatistica(classificacao) {
+            const total = parseInt(document.getElementById('statTotal').textContent) + 1;
+            document.getElementById('statTotal').textContent = total;
+
+            if (classificacao === 'seguro') {
+                const seguras = parseInt(document.getElementById('statSeguras').textContent) + 1;
+                document.getElementById('statSeguras').textContent = seguras;
+            } else if (classificacao === 'baixo_risco') {
+                const baixoRisco = parseInt(document.getElementById('statBaixoRisco').textContent) + 1;
+                document.getElementById('statBaixoRisco').textContent = baixoRisco;
+            } else if (classificacao === 'alto_risco') {
+                const altoRisco = parseInt(document.getElementById('statAltoRisco').textContent) + 1;
+                document.getElementById('statAltoRisco').textContent = altoRisco;
+            }
+        }
+
+        function limparConsole() {
+            consoleDiv.innerHTML = '';
+            console.log('🗑️ Console limpo');
+        }
+
+        function limparURLs() {
+            document.getElementById('urlInput').value = '';
+        }
+
+        function carregarURLsSeguras() {
+            document.getElementById('urlInput').value = `https://www.google.com
+https://www.github.com
+https://www.youtube.com`;
+        }
+
+        function carregarURLsRiscoBaixo() {
+            document.getElementById('urlInput').value = `http://exemplo-sem-https.com
+https://bit.ly/teste123
+https://tinyurl.com/abcd1234
+https://site-com-muitos-hifens-no-dominio-teste.com
+https://site123456789.com`;
+        }
+
+        function carregarURLsAltoRisco() {
+            document.getElementById('urlInput').value = `https://192.168.1.1/login
+https://googl3.com
+https://usuario:senha@exemplo.com
+https://paypal-security-verify.tk
+https://secure-login-verify-account-bancodobrasil.com.br.xyz`;
+        }
+
+        function carregarURLsCompleto() {
+            document.getElementById('urlInput').value = `https://www.google.com
+https://www.github.com
+https://www.youtube.com
+http://exemplo-sem-https.com
+https://bit.ly/teste123
+https://tinyurl.com/abcd1234
+https://cutt.ly/exemplo
+https://192.168.1.1/login
+http://203.0.113.45/admin
+https://gооgle.com
+https://paypaӏ.com
+https://googl3.com
+https://facebo0k.com
+https://itau-banco.com.br
+https://sub1.sub2.sub3.sub4.sub5.exemplo.com
+https://site-com-muitos-hifens-no-dominio-teste.com
+https://site123456789.com
+https://exemplo.com/caminho/muito/longo/que/continua/por/muitas/pastas/e/subpastas
+https://usuario:senha@exemplo.com
+https://google.com@malicioso.com
+https://site-duvidoso.tk
+https://phishing-teste.xyz
+https://download-gratis.ml
+https://secure-login-verify.com
+https://update-account-banco.com
+https://confirm-signin-validar.com
+https://paypal-security-verify.tk
+https://secure-login-verify-account-bancodobrasil.com.br.xyz
+http://192.168.1.1@banco-login-seguro.tk/verify
+https://paypal-verify-account.tk
+https://site-novo-suspeito.xyz
+https://192.168.0.100/phishing`;
+        }
+
+        function exportarResultados() {
+            if (!resultadosGlobais) {
+                alert('Nenhum resultado disponível para exportar!');
+                return;
+            }
+
+            const dados = {
+                dataExportacao: new Date().toISOString(),
+                configuracao: {
+                    modoSimulado: document.getElementById('modoSimulado').value === 'true',
+                    delay: parseInt(document.getElementById('delay').value),
+                    verbose: document.getElementById('verbose').value === 'true'
+                },
+                estatisticas: resultadosGlobais.estatisticas,
+                resultados: resultadosGlobais.resultados
+            };
+
+            const json = JSON.stringify(dados, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `teste-antiphishing-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+
+            console.log('\n💾 Resultados exportados com sucesso!');
+        }
+
+        // Inicialização
+        console.log('🛡️ Sistema de teste em massa pronto!');
+        console.log('💡 Dica: Use os botões de teste rápido para começar');
+    </script>
+</body>
+</html>
