@@ -74,7 +74,7 @@ async function limparCache() {
  */
 function mostrarSobre() {
     const mensagem = `
-🛡️ XPTO
+🛡️ Guardião Web
 Versão 1.0.0
 
 Extensão open-source desenvolvida para proteger usuários brasileiros contra links maliciosos e tentativas de phishing.
@@ -89,7 +89,7 @@ Funcionalidades:
 
 Desenvolvido como trabalho acadêmico de segurança.
 
-GitHub: github.com/seu-usuario/anti-phishing-brasil
+GitHub: https://github.com/Arturoliveira1212/Extensao-chrome-phishing
   `;
 
     alert(mensagem);

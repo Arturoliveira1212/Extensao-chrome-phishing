@@ -1,6 +1,6 @@
 {
     "manifest_version": 3,
-    "name": "XPTO",
+    "name": "Guardião Web",
     "version": "1.0.0",
     "description": "Extensão de segurança para proteger usuários contra links maliciosos e phishing",
     "icons": {

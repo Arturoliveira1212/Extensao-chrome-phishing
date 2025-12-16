@@ -273,7 +273,7 @@ function mostrarModalAviso(resultado, elementoLink) {
       </div>
 
       <p class="anti-phishing-rodape">
-        <small>🔒 Protegido por XPTO</small>
+        <small>🔒 Protegido por Guardião Web</small>
       </p>
     </div>
   `;
