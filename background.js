@@ -128,27 +128,48 @@ async function verificarBlacklist(dominio) {
 }
 
 /**
- * Consulta PhishTank API para verificar phishing
+ * Consulta URLhaus API para verificar URLs maliciosas
  * @param {string} dominio - Domínio para verificar
  * @returns {Promise<Object>} - Resultado da consulta
  */
 async function verificarPhishTank(dominio) {
     try {
-        // PhishTank oferece um arquivo de download com URLs conhecidas
-        // Como alternativa, usamos verificação local de padrões conhecidos
+        // PhishTank - não está aceitando novos cadastros atualmente
+        // URLhaus oferece API gratuita sem necessidade de chave
+        // Consulta lista de URLs maliciosas ativas/online
+        
+        const body = new URLSearchParams();
+        body.append('host', dominio);
 
-        // Lista simplificada de domínios maliciosos conhecidos (seria expandida)
-        const dominiosMaliciososConhecidos = [
-            // Esta lista seria alimentada por uma base de dados atualizada
-        ];
+        const resposta = await fetch('https://urlhaus-api.abuse.ch/v1/host/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: body
+        });
 
-        const encontrado = dominiosMaliciososConhecidos.includes(dominio);
+        if (resposta.ok) {
+            const dados = await resposta.json();
+            
+            // query_status: ok = domínio encontrado, no_results = não encontrado
+            if (dados.query_status === 'ok' && dados.urls && dados.urls.length > 0) {
+                // Verifica se há URLs online/ativas
+                const urlsOnline = dados.urls.filter(url => url.url_status === 'online');
+                
+                return { 
+                    encontrado: urlsOnline.length > 0,
+                    totalUrls: dados.urls.length,
+                    urlsOnline: urlsOnline.length
+                };
+            }
+        }
 
-        return { encontrado: encontrado };
+        return { encontrado: false, totalUrls: 0, urlsOnline: 0 };
 
     } catch (erro) {
-        console.error('Erro ao verificar PhishTank:', erro);
-        return { encontrado: false };
+        console.error('Erro ao verificar URLhaus:', erro);
+        return { encontrado: false, totalUrls: 0, urlsOnline: 0 };
     }
 }
 
