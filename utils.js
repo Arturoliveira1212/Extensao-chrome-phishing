@@ -13,13 +13,13 @@ const ENCURTADORES_CONHECIDOS = [
 
 // Lista de domínios legítimos populares no Brasil
 const DOMINIOS_LEGITIMOS = [
-    'google.com', 'youtube.com', 'facebook.com', 'instagram.com',
-    'whatsapp.com', 'twitter.com', 'linkedin.com', 'amazon.com',
-    'mercadolivre.com.br', 'mercadopago.com.br', 'olx.com.br',
-    'americanas.com.br', 'magazineluiza.com.br', 'casasbahia.com.br',
-    'gov.br', 'bb.com.br', 'itau.com.br', 'bradesco.com.br',
-    'santander.com.br', 'caixa.gov.br', 'nubank.com.br',
-    'correios.com.br', 'receita.fazenda.gov.br'
+    // 'google.com', 'youtube.com', 'facebook.com', 'instagram.com',
+    // 'whatsapp.com', 'twitter.com', 'linkedin.com', 'amazon.com',
+    // 'mercadolivre.com.br', 'mercadopago.com.br', 'olx.com.br',
+    // 'americanas.com.br', 'magazineluiza.com.br', 'casasbahia.com.br',
+    // 'gov.br', 'bb.com.br', 'itau.com.br', 'bradesco.com.br',
+    // 'santander.com.br', 'caixa.gov.br', 'nubank.com.br',
+    // 'correios.com.br', 'receita.fazenda.gov.br'
 ];
 
 // Caracteres homógrafos comuns (ataques IDN)
