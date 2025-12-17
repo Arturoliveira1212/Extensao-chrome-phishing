@@ -221,11 +221,11 @@ async function verificarBlacklist(dominio) {
 
         if (resposta.ok) {
             const dados = await resposta.json();
-            
+
             if (dados.query_status === 'ok' && dados.urls && dados.urls.length > 0) {
                 const urlsOnline = dados.urls.filter(url => url.url_status === 'online');
-                
-                return { 
+
+                return {
                     malicioso: urlsOnline.length > 0,
                     fonte: urlsOnline.length > 0 ? 'URLhaus' : 'Nenhuma',
                     totalUrls: dados.urls.length,
@@ -335,27 +335,27 @@ async function verificarVirusTotal(dominio) {
 
 function simularBlacklist(dominio) {
     const url = dominio.toLowerCase();
-    
+
     if ((url.includes('paypal') && !url.includes('paypal.com')) ||
         (url.includes('banco') && url.includes('verify')) ||
         (url.includes('phishing')) ||
         (url.includes('login') && url.includes('.tk'))) {
-        return { 
-            malicioso: true, 
+        return {
+            malicioso: true,
             fonte: 'URLhaus (simulado)',
             totalUrls: 5,
             urlsOnline: 3
         };
     }
-    
+
     return { malicioso: false, fonte: 'Nenhuma' };
 }
 
 function simularIdadeDominio(dominio) {
     const url = dominio.toLowerCase();
-    
-    if (url.includes('.tk') || url.includes('.ml') || 
-        url.includes('.ga') || url.includes('.cf') || 
+
+    if (url.includes('.tk') || url.includes('.ml') ||
+        url.includes('.ga') || url.includes('.cf') ||
         url.includes('.gq') || url.includes('.xyz') ||
         url.includes('novo') || url.includes('site-novo')) {
         const dias = Math.floor(Math.random() * 90) + 10;
@@ -365,13 +365,13 @@ function simularIdadeDominio(dominio) {
             dataRegistro: new Date(Date.now() - dias * 24 * 60 * 60 * 1000).toISOString()
         };
     }
-    
+
     return { recente: false, dias: null, dataRegistro: null };
 }
 
 function simularVirusTotal(dominio) {
     const url = dominio.toLowerCase();
-    
+
     if (url.match(/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}/) ||
         (url.includes('verify') && url.includes('account')) ||
         (url.includes('secure') && url.includes('update')) ||
@@ -381,7 +381,7 @@ function simularVirusTotal(dominio) {
             deteccoes: Math.floor(Math.random() * 10) + 1
         };
     }
-    
+
     return { malicioso: false, deteccoes: 0 };
 }
 
@@ -688,7 +688,7 @@ async function testarURLs(urls, opcoes = {}) {
 
         if (config.verbose) {
             const emoji = resultado.classificacao === NIVEL_RISCO.SEGURO ? '✅' :
-                         resultado.classificacao === NIVEL_RISCO.BAIXO_RISCO ? '⚠️' : '🚨';
+                resultado.classificacao === NIVEL_RISCO.BAIXO_RISCO ? '⚠️' : '🚨';
             console.log(`  ${emoji} Classificação: ${resultado.classificacao.toUpperCase()}`);
             console.log(`  📊 Pontuação: ${resultado.pontuacaoRisco}`);
             console.log(`  🔍 Problemas: ${resultado.problemasDetectados.length}`);
@@ -707,11 +707,11 @@ async function testarURLs(urls, opcoes = {}) {
     console.log('\n' + '='.repeat(80));
     console.log('📈 RELATÓRIO FINAL');
     console.log('='.repeat(80));
-    console.log(`✅ Seguras:      ${estatisticas.seguras} (${(estatisticas.seguras/estatisticas.total*100).toFixed(1)}%)`);
-    console.log(`⚠️  Baixo Risco:  ${estatisticas.baixoRisco} (${(estatisticas.baixoRisco/estatisticas.total*100).toFixed(1)}%)`);
-    console.log(`🚨 Alto Risco:   ${estatisticas.altoRisco} (${(estatisticas.altoRisco/estatisticas.total*100).toFixed(1)}%)`);
-    console.log(`⏱️  Tempo Total:  ${(estatisticas.tempoTotal/1000).toFixed(2)}s`);
-    console.log(`⚡ Tempo Médio:  ${(estatisticas.tempoTotal/estatisticas.total).toFixed(0)}ms por URL`);
+    console.log(`✅ Seguras:      ${estatisticas.seguras} (${(estatisticas.seguras / estatisticas.total * 100).toFixed(1)}%)`);
+    console.log(`⚠️  Baixo Risco:  ${estatisticas.baixoRisco} (${(estatisticas.baixoRisco / estatisticas.total * 100).toFixed(1)}%)`);
+    console.log(`🚨 Alto Risco:   ${estatisticas.altoRisco} (${(estatisticas.altoRisco / estatisticas.total * 100).toFixed(1)}%)`);
+    console.log(`⏱️  Tempo Total:  ${(estatisticas.tempoTotal / 1000).toFixed(2)}s`);
+    console.log(`⚡ Tempo Médio:  ${(estatisticas.tempoTotal / estatisticas.total).toFixed(0)}ms por URL`);
     console.log('='.repeat(80) + '\n');
 
     return {
@@ -724,14 +724,14 @@ function gerarRelatorioDetalhado(resultado) {
     console.log('\n' + '-'.repeat(80));
     console.log(`🔗 URL: ${resultado.url}`);
     console.log('-'.repeat(80));
-    
+
     const emoji = resultado.classificacao === NIVEL_RISCO.SEGURO ? '✅' :
-                 resultado.classificacao === NIVEL_RISCO.BAIXO_RISCO ? '⚠️' : '🚨';
-    
+        resultado.classificacao === NIVEL_RISCO.BAIXO_RISCO ? '⚠️' : '🚨';
+
     console.log(`${emoji} CLASSIFICAÇÃO: ${resultado.classificacao.toUpperCase()}`);
     console.log(`📊 PONTUAÇÃO DE RISCO: ${resultado.pontuacaoRisco}`);
     console.log(`💬 ${resultado.mensagem}`);
-    
+
     if (resultado.problemasDetectados.length > 0) {
         console.log(`\n🔍 PROBLEMAS DETECTADOS (${resultado.problemasDetectados.length}):`);
         resultado.problemasDetectados.forEach((problema, idx) => {
@@ -740,7 +740,7 @@ function gerarRelatorioDetalhado(resultado) {
     } else {
         console.log('\n✓ Nenhum problema detectado');
     }
-    
+
     console.log(`\n⏱️  Analisada em: ${new Date(resultado.dataAnalise).toLocaleString('pt-BR')}`);
     if (resultado.tempoAnalise) {
         console.log(`⚡ Tempo de análise: ${resultado.tempoAnalise}ms`);

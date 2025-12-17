@@ -101,5 +101,3 @@ btnSobre.addEventListener('click', mostrarSobre);
 
 // Carrega estatísticas ao abrir
 carregarEstatisticas();
-
-console.log('Popup carregado');

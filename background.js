@@ -36,7 +36,6 @@ chrome.runtime.onMessage.addListener((mensagem, remetente, enviarResposta) => {
 
     if (mensagem.acao === 'limpar_cache') {
         cacheReputacao.clear();
-        console.log('Cache de reputação limpo');
         enviarResposta({ sucesso: true });
         return true;
     }
@@ -326,8 +325,6 @@ setInterval(limparCacheAntigo, 60 * 60 * 1000);
  */
 chrome.runtime.onInstalled.addListener((detalhes) => {
     if (detalhes.reason === 'install') {
-        console.log('Extensão de Proteção Anti-Phishing instalada com sucesso!');
-
         // Configura valores padrão no storage
         chrome.storage.local.set({
             extensaoAtiva: true,
@@ -338,5 +335,3 @@ chrome.runtime.onInstalled.addListener((detalhes) => {
         });
     }
 });
-
-console.log('Background Service Worker iniciado');

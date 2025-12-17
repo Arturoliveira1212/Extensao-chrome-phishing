@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,7 +66,8 @@
             font-weight: bold;
         }
 
-        .config-item input, .config-item select {
+        .config-item input,
+        .config-item select {
             width: 100%;
             padding: 8px;
             background: #3c3c3c;
@@ -151,12 +153,30 @@
             margin: 2px 0;
         }
 
-        .log-info { color: #4ec9b0; }
-        .log-success { color: #4caf50; }
-        .log-warning { color: #ff9800; }
-        .log-error { color: #f44336; }
-        .log-header { color: #569cd6; font-weight: bold; }
-        .log-separator { color: #666; }
+        .log-info {
+            color: #4ec9b0;
+        }
+
+        .log-success {
+            color: #4caf50;
+        }
+
+        .log-warning {
+            color: #ff9800;
+        }
+
+        .log-error {
+            color: #f44336;
+        }
+
+        .log-header {
+            color: #569cd6;
+            font-weight: bold;
+        }
+
+        .log-separator {
+            color: #666;
+        }
 
         .progress-bar {
             width: 100%;
@@ -207,10 +227,21 @@
             font-size: 12px;
         }
 
-        .stat-card.seguro .stat-value { color: #4caf50; }
-        .stat-card.baixo-risco .stat-value { color: #ff9800; }
-        .stat-card.alto-risco .stat-value { color: #f44336; }
-        .stat-card.total .stat-value { color: #4ec9b0; }
+        .stat-card.seguro .stat-value {
+            color: #4caf50;
+        }
+
+        .stat-card.baixo-risco .stat-value {
+            color: #ff9800;
+        }
+
+        .stat-card.alto-risco .stat-value {
+            color: #f44336;
+        }
+
+        .stat-card.total .stat-value {
+            color: #4ec9b0;
+        }
 
         .example-urls {
             background: #252526;
@@ -232,13 +263,15 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <h1>🛡️ TESTE EM MASSA - ANALISADOR ANTI-PHISHING</h1>
 
         <div class="info-box">
             <h3>📋 Informações</h3>
-            <p>Este sistema permite testar múltiplas URLs simultaneamente, combinando análises estáticas e consultas a APIs externas.</p>
+            <p>Este sistema permite testar múltiplas URLs simultaneamente, combinando análises estáticas e consultas a
+                APIs externas.</p>
             <p>Digite uma URL por linha no campo abaixo e clique em "Iniciar Teste".</p>
         </div>
 
@@ -267,7 +300,8 @@
             <label style="display: block; color: #ce9178; margin-bottom: 10px; font-weight: bold;">
                 URLs para Análise (uma por linha):
             </label>
-            <textarea id="urlInput" placeholder="https://exemplo1.com&#10;https://exemplo2.com&#10;https://exemplo3.com"></textarea>
+            <textarea id="urlInput"
+                placeholder="https://exemplo1.com&#10;https://exemplo2.com&#10;https://exemplo3.com"></textarea>
         </div>
 
         <div class="example-urls">
@@ -315,7 +349,7 @@
         </div>
     </div>
 
-    <script src="teste-completo.js"></script>
+    <script src="teste-em-massa.js"></script>
     <script>
         let testeEmAndamento = false;
         let resultadosGlobais = null;
@@ -323,14 +357,14 @@
         // Redireciona console.log para o console visual
         const consoleDiv = document.getElementById('console');
         const originalLog = console.log;
-        
-        console.log = function(...args) {
+
+        console.log = function (...args) {
             originalLog.apply(console, args);
-            
+
             const texto = args.join(' ');
             const linha = document.createElement('div');
             linha.className = 'log-line';
-            
+
             // Colorização baseada no conteúdo
             if (texto.includes('✅') || texto.includes('Segura')) {
                 linha.className += ' log-success';
@@ -345,7 +379,7 @@
             } else {
                 linha.className += ' log-info';
             }
-            
+
             linha.textContent = texto;
             consoleDiv.appendChild(linha);
             consoleDiv.scrollTop = consoleDiv.scrollHeight;
@@ -385,7 +419,7 @@
             let processadas = 0;
 
             const originalAnalisar = AnalisadorURL.prototype.analisarURL;
-            AnalisadorURL.prototype.analisarURL = async function(url) {
+            AnalisadorURL.prototype.analisarURL = async function (url) {
                 const resultado = await originalAnalisar.call(this, url);
                 processadas++;
                 atualizarProgresso(processadas, totalUrls);
@@ -544,4 +578,5 @@ https://192.168.0.100/phishing`;
         console.log('💡 Dica: Use os botões de teste rápido para começar');
     </script>
 </body>
+
 </html>

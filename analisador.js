@@ -115,11 +115,6 @@ class AnalisadorURL {
             const hostname = urlObj.hostname;
             const pathname = urlObj.pathname;
 
-            console.log('Verificando padrões suspeitos na URL:', url);
-            console.log('Hostname:', hostname);
-            console.log('Pathname:', pathname);
-            console.log(urlObj);
-
             // Verifica excesso de subdomínios (possível ofuscação)
             const subdominios = hostname.split('.');
             if (subdominios.length > 4) {

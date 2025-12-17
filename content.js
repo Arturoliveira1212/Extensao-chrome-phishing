@@ -13,8 +13,6 @@ let urlEmAnalise = null;
  * Inicializa os event listeners quando a página carregar
  */
 function inicializar() {
-    console.log('Extensão Anti-Phishing ativada na página');
-
     // Intercepta todos os cliques na página
     document.addEventListener('click', interceptarClique, true);
 
@@ -99,8 +97,6 @@ async function interceptarTeclado(evento) {
             if (ehEncurtador(urlAlvo)) {
                 urlAlvo = await resolverRedirecionamento(urlAlvo);
             }
-
-            console.log('Interceptado Enter em link:', urlAlvo);
 
             await analisarEProcessarLink(urlAlvo, elementoAtivo);
         }
@@ -293,25 +289,6 @@ function mostrarModalAviso(resultado, elementoLink) {
 
     // Mostra modal com animação
     setTimeout(() => modal.classList.add('show'), 10);
-
-    // NÃO permite fechar clicando fora - usuário deve escolher uma opção
-    // Isso garante que o modal permaneça até decisão do usuário
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            // Não faz nada - usuário deve clicar em um dos botões
-            console.log('Use os botões para tomar uma decisão sobre este link');
-        }
-    });
-
-    // NÃO permite fechar com ESC - usuário deve escolher uma opção
-    // Isso força o usuário a tomar uma decisão consciente
-    const handleEsc = (e) => {
-        if (e.key === 'Escape') {
-            console.log('Use os botões para tomar uma decisão sobre este link');
-            // Não fecha o modal
-        }
-    };
-    document.addEventListener('keydown', handleEsc);
 }
 
 /**
@@ -381,5 +358,3 @@ if (document.readyState === 'loading') {
 } else {
     inicializar();
 }
-
-console.log('Content Script Anti-Phishing carregado');
