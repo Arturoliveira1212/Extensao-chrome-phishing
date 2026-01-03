@@ -113,7 +113,7 @@ async function analisarEProcessarLink(url, elementoLink) {
         urlEmAnalise = url;
 
         // Mostra modal de carregamento
-        mostrarModalCarregamento(url);
+        // mostrarModalCarregamento(url);
 
         // Cria instância do analisador
         const analisador = new AnalisadorURL();
