@@ -59,7 +59,7 @@ A extensão classifica cada link em três níveis:
 
 4. **Clique em "Carregar sem compactação"**
 
-5. **Selecione a pasta onde está o projeto
+5. **Selecione a pasta onde está o projeto**
 
 6. **Pronto!** A extensão está instalada e ativa 🎉
 
