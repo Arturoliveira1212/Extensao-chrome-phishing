@@ -26,9 +26,7 @@ A extensão analisa automaticamente todos os links clicados pelo usuário, ident
   - Verificação de certificados SSL
 - **Análise de Padrões Suspeitos**:
   - Excesso de subdomínios
-  - Uso excessivo de números e hífens
   - URLs extremamente longas
-  - Palavras suspeitas no domínio
 
 ### 🎯 Classificação de Risco
 
@@ -49,7 +47,7 @@ A extensão classifica cada link em três níveis:
 
 1. **Clone ou baixe este repositório**:
    ```bash
-   git clone https://github.com/seu-usuario/anti-phishing-brasil.git
+   git clone https://github.com/Arturoliveira1212/Extensao-chrome-phishing.git
    ```
 
 2. **Abra o Chrome e acesse**:
@@ -61,7 +59,7 @@ A extensão classifica cada link em três níveis:
 
 4. **Clique em "Carregar sem compactação"**
 
-5. **Selecione a pasta** `artur-extensao` onde está o projeto
+5. **Selecione a pasta onde está o projeto
 
 6. **Pronto!** A extensão está instalada e ativa 🎉
 
@@ -71,11 +69,10 @@ A extensão classifica cada link em três níveis:
 
 1. **Navegue normalmente**: A extensão trabalha automaticamente em segundo plano
 2. **Ao clicar em um link**: A extensão analisa o destino antes de navegar
-3. **Aguarde a análise**: Uma caixa de carregamento aparece durante a verificação
-4. **Veja o resultado**:
+3. **Veja o resultado**:
    - Links seguros navegam automaticamente
    - Links suspeitos exibem um aviso com detalhes
-5. **Tome sua decisão**: Você pode voltar (recomendado) ou continuar por sua conta
+4. **Tome sua decisão**: Você pode voltar (recomendado) ou continuar por sua conta
 
 ### Interface do Popup
 
